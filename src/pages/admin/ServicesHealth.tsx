@@ -124,9 +124,13 @@ export default function ServicesHealth() {
     try {
       // The backend schedules the ~30s probe and answers at once, so poll until
       // it finishes rather than holding the request open past the proxy timeout.
+      // Right after a deploy the workers can still be registering, so keep going
+      // while any row is unresolved rather than trusting `probing` alone.
+      const unresolved = (s: ServicesHealth) =>
+        Object.values(s.services || {}).some((v) => v.status === "unknown");
       let next = await reprobeServicesHealth();
       setData(next);
-      for (let i = 0; i < 15 && next.probing; i++) {
+      for (let i = 0; i < 15 && (next.probing || unresolved(next)); i++) {
         await new Promise((resolve) => setTimeout(resolve, 3000));
         next = await getServicesHealth();
         setData(next);
