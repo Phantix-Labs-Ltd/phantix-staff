@@ -13,6 +13,7 @@ import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/admin/Clients";
 import SupportTickets from "@/pages/admin/Support";
 import ServerOps from "@/pages/admin/ServerOps";
+import ServicesHealth from "@/pages/admin/ServicesHealth";
 import AiAdmin from "@/pages/admin/AiAdmin";
 import AgentActivityAdmin from "@/pages/admin/AgentActivity";
 import ComplianceAdmin from "@/pages/admin/Compliance";
@@ -137,6 +138,7 @@ export default function App() {
             <Route path="/logs" element={<RequireAdmin><DevLogs /></RequireAdmin>} />
             <Route path="/logs/issues/:issueId" element={<RequireAdmin><DevLogs /></RequireAdmin>} />
             <Route path="/server" element={<RequireAdmin><ServerOps /></RequireAdmin>} />
+            <Route path="/services" element={<RequireAdmin><ServicesHealth /></RequireAdmin>} />
             <Route path="/scanner-tools" element={<RequireAdmin><ScannerTools /></RequireAdmin>} />
             <Route path="/bus" element={<RequireAdmin><BusDiagnostics /></RequireAdmin>} />
             <Route path="/analytics" element={<RequireAdmin><AnalyticsAdmin /></RequireAdmin>} />

@@ -95,6 +95,7 @@ const navSections: {
     items: [
       { to: "/logs", label: "Logs", icon: <FileText size={18} /> },
       { to: "/server", label: "Server", icon: <Server size={18} /> },
+      { to: "/services", label: "Services", icon: <Activity size={18} /> },
       { to: "/analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
       { to: "/architecture", label: "Architecture", icon: <Layers size={18} /> },
       { type: "dropdown", label: "More Monitor", icon: <MoreHorizontal size={18} />, items: moreMonitorSubItems },

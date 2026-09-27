@@ -7,6 +7,15 @@ export function StatusBadge({ status }: { status: string | null | undefined }) {
   const colorMap: Record<string, string> = {
     active: "text-severity-low bg-severity-low/10 border-severity-low/30",
     ready: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
+    // Per-service health (status_service.service_health / build_status_report).
+    healthy: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
+    ok: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
+    unknown: "text-severity-medium bg-severity-medium/10 border-severity-medium/30",
+    degraded: "text-severity-medium bg-severity-medium/10 border-severity-medium/30",
+    warning: "text-severity-medium bg-severity-medium/10 border-severity-medium/30",
+    error: "text-severity-critical bg-severity-critical/10 border-severity-critical/30",
+    down: "text-severity-critical bg-severity-critical/10 border-severity-critical/30",
+    unhealthy: "text-severity-critical bg-severity-critical/10 border-severity-critical/30",
     completed: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
     running: "text-severity-low bg-severity-low/10 border-severity-low/30",
     queued: "text-slate-400 bg-slate-400/10 border-slate-500/30",
