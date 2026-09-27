@@ -40,6 +40,8 @@ export type ServicesHealth = {
   services: Record<string, ServiceHealth>;
   summary?: ServicesSummary;
   checks?: Record<string, HealthCheck>;
+  /** True while a worker probe is still running in the background. */
+  probing?: boolean;
 };
 
 /** Per-service health. Served from the background probe cache, so it is fast. */
@@ -48,15 +50,15 @@ export function getServicesHealth(): Promise<ServicesHealth> {
 }
 
 /**
- * Re-run the Celery worker probe before reporting.
+ * Kick a fresh worker probe and return the cached report immediately.
  *
- * The cached endpoint can answer `unknown / awaiting worker probe` for up to a
- * probe cycle after a deploy; this variant pays the few seconds it costs to
- * inspect the workers so a refresh button shows real queue coverage.
+ * The probe shells out to `celery inspect` (~30s, longer than the proxy's
+ * request timeout), so the backend schedules it and answers with
+ * `probing: true` — poll {@link getServicesHealth} until the rows resolve.
  */
 export function reprobeServicesHealth(): Promise<ServicesHealth> {
   return api.post<ServicesHealth>("/admin/health/services/refresh", undefined, {
-    timeoutMs: 120_000,
+    timeoutMs: 30_000,
   });
 }
 

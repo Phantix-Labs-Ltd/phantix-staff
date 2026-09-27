@@ -122,7 +122,15 @@ export default function ServicesHealth() {
     setReprobing(true);
     setProbeError(null);
     try {
-      setData(await reprobeServicesHealth());
+      // The backend schedules the ~30s probe and answers at once, so poll until
+      // it finishes rather than holding the request open past the proxy timeout.
+      let next = await reprobeServicesHealth();
+      setData(next);
+      for (let i = 0; i < 15 && next.probing; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        next = await getServicesHealth();
+        setData(next);
+      }
     } catch (e) {
       setProbeError(e instanceof Error ? e.message : "Could not re-probe the workers.");
     } finally {
@@ -175,7 +183,13 @@ export default function ServicesHealth() {
           >
             {overall.icon}
             <span className="text-sm font-medium">{overall.headline}</span>
-            <span className="ml-auto flex items-center gap-3 text-xs text-slate-400">
+            {data.probing && (
+              <span className="ml-auto flex items-center gap-1.5 text-xs text-severity-medium">
+                <RefreshCw size={12} className="animate-spin" />
+                probing workers…
+              </span>
+            )}
+            <span className={cx("flex items-center gap-3 text-xs text-slate-400", !data.probing && "ml-auto")}>
               {data.environment && <span className="chip">{data.environment}</span>}
               {data.timestamp && (
                 <span className="flex items-center gap-1">
