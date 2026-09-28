@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
-  LayoutDashboard, Shield, Building2, MessageSquare, Server, Brain,
+  LayoutDashboard, Shield, Building2, MessageSquare, MessageSquareWarning, Server, Brain,
   Users, FileCheck, Wrench, Search, Activity, LogOut, Menu, X,
   Zap, Globe, AlertTriangle, ScanLine, BarChart3, RefreshCw,
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
@@ -76,6 +76,7 @@ const navSections: {
     role: "all",
     items: [
       { to: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
+      { to: "/search", label: "Search", icon: <Search size={18} /> },
       { to: "/clients", label: "Clients", icon: <Building2 size={18} />, adminOnly: true },
       { to: "/sandbox", label: "Sandbox", icon: <FlaskConical size={18} />, adminOnly: true },
       { to: "/support", label: "Support", icon: <MessageSquare size={18} /> },
@@ -96,6 +97,7 @@ const navSections: {
       { to: "/logs", label: "Logs", icon: <FileText size={18} /> },
       { to: "/server", label: "Server", icon: <Server size={18} /> },
       { to: "/services", label: "Services", icon: <Activity size={18} /> },
+      { to: "/feedback", label: "Feedback", icon: <MessageSquareWarning size={18} /> },
       { to: "/analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
       { to: "/architecture", label: "Architecture", icon: <Layers size={18} /> },
       { type: "dropdown", label: "More Monitor", icon: <MoreHorizontal size={18} />, items: moreMonitorSubItems },
