@@ -12,6 +12,7 @@ import { BrandLoader } from "@/components/BrandLoader";
 import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/admin/Clients";
 import SupportTickets from "@/pages/admin/Support";
+import SearchPage from "@/pages/admin/Search";
 import ServerOps from "@/pages/admin/ServerOps";
 import ServicesHealth from "@/pages/admin/ServicesHealth";
 import AiAdmin from "@/pages/admin/AiAdmin";
@@ -34,6 +35,7 @@ import SandboxAdmin from "@/pages/admin/Sandbox";
 import AnalyticsAdmin from "@/pages/admin/Analytics";
 import ArchitectureAdmin from "@/pages/admin/Architecture";
 import DemoRequestsAdmin from "@/pages/admin/DemoRequests";
+import FeedbackAdmin from "@/pages/admin/Feedback";
 import SocProvisioning from "@/pages/admin/SocProvisioning";
 import EmailTemplates from "@/pages/admin/EmailTemplates";
 import LegalDocuments from "@/pages/admin/LegalDocuments";
@@ -121,6 +123,7 @@ export default function App() {
             {/* All staff */}
             <Route path="/dashboard" element={<RequireStaff><Dashboard /></RequireStaff>} />
             <Route path="/support" element={<RequireStaff><SupportTickets /></RequireStaff>} />
+            <Route path="/search" element={<RequireStaff><SearchPage /></RequireStaff>} />
 
             {/* Contributor workspace (+ admin/superadmin) */}
             <Route path="/contribute" element={<RequireContributor><ContributeHome /></RequireContributor>} />
@@ -143,6 +146,7 @@ export default function App() {
             <Route path="/bus" element={<RequireAdmin><BusDiagnostics /></RequireAdmin>} />
             <Route path="/analytics" element={<RequireAdmin><AnalyticsAdmin /></RequireAdmin>} />
             <Route path="/demo-requests" element={<RequireAdmin><DemoRequestsAdmin /></RequireAdmin>} />
+            <Route path="/feedback" element={<RequireAdmin><FeedbackAdmin /></RequireAdmin>} />
             <Route path="/compliance" element={<RequireAdmin><ComplianceAdmin /></RequireAdmin>} />
             <Route path="/soc-provisioning" element={<RequireAdmin><SocProvisioning /></RequireAdmin>} />
             <Route path="/email-templates" element={<RequireAdmin><EmailTemplates /></RequireAdmin>} />

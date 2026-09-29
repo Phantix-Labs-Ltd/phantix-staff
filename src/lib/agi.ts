@@ -947,12 +947,15 @@ export async function upsertOrgContextPack(
 }
 
 // ── Findings ──────────────────────────────────────────────────────────────────
+/**
+ * A failed request throws rather than resolving to `[]`: the findings panes
+ * poll this, and an empty list on a dropped connection wiped the pane until the
+ * API came back. Callers keep what they last showed when this rejects.
+ */
 export async function loadAgiFindings(sessionId: number): Promise<AgiFinding[]> {
   if (DEMO_MODE) { await delay(250); return sortAgiFindings(normalizeAgiFindings(demoFindings)); }
-  try {
-    const res = await api.get<unknown>(`/admin/agi/sessions/${sessionId}/findings`);
-    return sortAgiFindings(normalizeAgiFindings(res));
-  } catch { return []; }
+  const res = await api.get<unknown>(`/admin/agi/sessions/${sessionId}/findings`);
+  return sortAgiFindings(normalizeAgiFindings(res));
 }
 
 export async function promoteAgiFinding(sessionId: number, findingId: string, assetId?: number): Promise<any> {

@@ -635,7 +635,7 @@ function SessionTerminal({ session, engagement, onStopped }: { session: AgiSessi
           onFindingVerify={(findingId, verified) => {
             if (!session?.id) return Promise.resolve(false);
             return setAgiFindingStatus(session.id, findingId, verified ? "verified" : "dismissed").then((r) => {
-              void loadAgiFindings(session.id).then((rows) => setLiveFindings(rows.map(mapAgiFinding)));
+              void loadAgiFindings(session.id).then((rows) => setLiveFindings(rows.map(mapAgiFinding))).catch(() => {});
               return !!r?.ok;
             });
           }}
