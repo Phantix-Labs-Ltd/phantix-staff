@@ -3,7 +3,7 @@ import { Cookie, RefreshCw, ShieldCheck } from "lucide-react";
 import { PageHeader, Card, CardHeader } from "@/components/ui";
 import { clearConsent, getConsent } from "@/lib/consent";
 
-// ── Cookies & analytics policy (staff portal, public) ─────────────────────────
+// ── Cookies and analytics policy (staff portal, public) ─────────────────────────
 
 export default function Cookies() {
   const consent = getConsent();
@@ -16,7 +16,7 @@ export default function Cookies() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <PageHeader
-        title="Cookies & analytics"
+        title="Cookies and analytics"
         description="What the staff portal measures, why, and how to change your choice."
       />
 
@@ -29,7 +29,7 @@ export default function Cookies() {
           />
           <p className="text-sm leading-6 text-slate-300">
             The staff portal records <strong className="text-slate-100">first-party, cookieless analytics</strong>{" "}
-            — page path, referrer and coarse device info — to understand internal tool usage. No advertising
+            It records page path, referrer and coarse device info, to understand internal tool usage. No advertising
             cookies, no cross-site tracking, no personal data.
           </p>
         </Card>
@@ -56,7 +56,7 @@ export default function Cookies() {
         </Card>
 
         <Card>
-          <CardHeader title="Retention & contact" subtitle="Governed by internal policy" />
+          <CardHeader title="Retention and contact" subtitle="Governed by internal policy" />
           <p className="text-sm leading-6 text-slate-300">
             Analytics records are retained in aggregate for product measurement and are not used to identify
             staff. Contact the platform team for any question.

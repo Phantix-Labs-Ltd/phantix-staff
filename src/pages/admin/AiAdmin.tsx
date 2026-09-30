@@ -139,7 +139,7 @@ export default function AiAdmin() {
       const allowed = editForm.allowed_evidence_keys.split(",").map((s) => s.trim()).filter(Boolean);
       if (allowed.length) body.allowed_evidence_keys = allowed;
       if (!DEMO_MODE) await api.patch(`/admin/ai/prompts/${detailKey}`, body);
-      toast("success", "Prompt updated", `${detailKey} — new version created`);
+      toast("success", "Prompt updated", `${detailKey}. New version created.`);
       setDetailTab("view");
       setDetail(null);
       prompts.refresh();
@@ -451,7 +451,7 @@ export default function AiAdmin() {
               </div>
             )}
           </CollapsibleCard>
-          <CollapsibleCard defaultOpen={false} title="Audit trail" subtitle="Recent AI calls — model, prompt, tokens, cost" action={<Activity size={15} className="text-phantix-300" />}>
+          <CollapsibleCard defaultOpen={false} title="Audit trail" subtitle="Recent AI calls: model, prompt, tokens and cost" action={<Activity size={15} className="text-phantix-300" />}>
             {audit.loading && !(audit.data ?? []).length ? (
               <div className="p-4"><TableSkeleton rows={3} /></div>
             ) : (audit.data ?? []).length === 0 ? (
@@ -526,7 +526,7 @@ export default function AiAdmin() {
               <>
                 <div>
                   <p className="label">System prompt</p>
-                  <pre className="whitespace-pre-wrap rounded-lg bg-phantix-950/70 border border-phantix-700/40 p-3 text-xs text-slate-300 max-h-52 overflow-auto">{detail.system_prompt || "—"}</pre>
+                  <pre className="whitespace-pre-wrap rounded-lg bg-phantix-950/70 border border-phantix-700/40 p-3 text-xs text-slate-300 max-h-52 overflow-auto">{detail.system_prompt || "Not set"}</pre>
                 </div>
                 {detail.user_template && (
                   <div>
@@ -579,7 +579,7 @@ export default function AiAdmin() {
           <div>
             <p className="label">Allowed evidence keys (comma-separated)</p>
             <input className="input font-mono" value={scopeForm} onChange={(e) => setScopeForm(e.target.value)} placeholder="finding_id, severity, cvss, description" />
-            <p className="mt-1 text-[13px] text-slate-500">These are the max evidence fields this prompt may receive — cannot exceed the platform catalog.</p>
+            <p className="mt-1 text-[13px] text-slate-500">These are the max evidence fields this prompt may receive. It cannot exceed the platform catalog.</p>
           </div>
           <button onClick={() => editScopeKey && saveScope(editScopeKey)} className="btn-primary w-full">Save data scope</button>
         </div>

@@ -222,7 +222,7 @@ function PiHelperCard({ t, dense = false, observe = false }: { t: AgiTranscriptC
           </span>
           <span className={cx("block truncate text-slate-400", dense ? "text-[12px]" : "wb-xs")}>
             {p.failed && p.error
-              ? `Helper unavailable (${p.error}) — the main agent continues.`
+              ? `Helper unavailable (${p.error}). The main agent continues.`
               : observe
                 ? "Helper result attached"
                 : p.task}
@@ -537,7 +537,7 @@ function SystemEventCard({ t, dense = false }: { t: AgiTranscriptChunk; dense?: 
           <div className="space-y-1">
             <p className="wb-sm text-slate-300">{t.content}</p>
             <p className="wb-2xs text-slate-500">
-              Dropped before recording — the evidence is kept, the noise is not.
+              Dropped before recording. The evidence is kept, the noise is not.
             </p>
           </div>
         )}
@@ -784,7 +784,7 @@ export function ApprovalNotice({
         </span>
         <div className="min-w-0">
           <p className={cx("font-semibold text-amber-200", dense ? "wb-xs" : "wb-sm")}>
-            Paused — awaiting authorization{count > 1 ? ` (${count} steps)` : ""}
+            Paused. Waiting for authorization{count > 1 ? ` (${count} steps)` : ""}
           </p>
           <p className={cx("mt-0.5 leading-relaxed text-slate-400", dense ? "wb-2xs" : "wb-xs")}>
             {stateChanging

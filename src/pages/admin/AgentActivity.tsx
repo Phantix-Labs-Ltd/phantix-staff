@@ -31,7 +31,7 @@ const DOMAIN_LABEL: Record<string, string> = {
 };
 
 function domainLabel(domain?: string | null): string {
-  if (!domain) return "—";
+  if (!domain) return "Not set";
   return DOMAIN_LABEL[domain] ?? domain.replace(/_/g, " ");
 }
 
@@ -84,7 +84,7 @@ export default function AgentActivityAdmin() {
     <div>
       <PageHeader
         title="Agent activity"
-        description="Every action the agent took across organizations — run, domain, operator intent, authorization and outcome."
+        description="Every action the agent took across organizations: run, domain, operator intent, authorization and outcome."
         actions={
           <button className="btn-ghost" onClick={() => void load()} title="Refresh">
             <RefreshCw size={15} className={cx(loading && "animate-spin")} />
@@ -97,7 +97,7 @@ export default function AgentActivityAdmin() {
         <p className="text-[13px] leading-5 text-gold-100/90">
           The agent runs <span className="font-semibold">as the signed-in user</span> and can do only what that
           user's role allows. State-changing actions need a fresh, single-use authorization bound to one action on
-          one run. A <span className="font-semibold">denied</span> row is a control holding — quote it in support
+          one run. A <span className="font-semibold">denied</span> row is a control holding. Quote it in support
           replies rather than treating it as an error.
         </p>
       </div>
@@ -153,7 +153,7 @@ export default function AgentActivityAdmin() {
           <EmptyState
             icon={<Activity size={22} />}
             title="No agent actions"
-            body="When an organization's agent runs, every action it takes — and every action it was refused — appears here."
+            body="When an organization's agent runs, every action it takes, and every action it was refused, appears here."
           />
         </Card>
       ) : (
@@ -191,11 +191,11 @@ export default function AgentActivityAdmin() {
                           <td className="td">
                             <p className="flex items-center gap-1.5 font-mono text-[13px] text-slate-200">
                               <Bot size={11} className="text-gold-400" />
-                              {row.tool ?? "—"}
+                              {row.tool ?? "Not set"}
                             </p>
                           </td>
                           <td className="td max-w-[340px] text-[13px] text-slate-400">
-                            <span className="block truncate" title={row.intent || undefined}>{row.intent || <span className="text-slate-600">—</span>}</span>
+                            <span className="block truncate" title={row.intent || undefined}>{row.intent || <span className="text-slate-600">Not set</span>}</span>
                           </td>
                           <td className="td">
                             {row.actor_name || row.actor_email || row.actor_user_id ? (
@@ -211,9 +211,9 @@ export default function AgentActivityAdmin() {
                             {row.authorized === true ? (
                               <span className="chip border-emerald-400/30 text-emerald-300"><KeyRound size={10} className="mr-1 inline" />authorized</span>
                             ) : row.authorized === false ? (
-                              <span className="chip border-phantix-700 text-slate-500">not required / none</span>
+                              <span className="chip border-phantix-700 text-slate-500">not required or none</span>
                             ) : (
-                              <span className="text-[13px] text-slate-600">—</span>
+                              <span className="text-[13px] text-slate-600">Not set</span>
                             )}
                           </td>
                           <td className="td">
@@ -252,7 +252,7 @@ export default function AgentActivityAdmin() {
                                   </p>
                                 )}
                                 <p className="font-mono text-[12px] text-slate-600">
-                                  evidence {row.evidence_hash?.slice(0, 16) ?? "—"} · response {row.response_hash?.slice(0, 16) ?? "—"}
+                                  evidence {row.evidence_hash?.slice(0, 16) ?? "Not set"} · response {row.response_hash?.slice(0, 16) ?? "Not set"}
                                 </p>
                               </div>
                             </td>

@@ -65,20 +65,20 @@ export type ContextField = {
 };
 
 export const CONTEXT_FIELDS: ContextField[] = [
-  { key: "process_flow", label: "Process flows", hint: "Login, checkout, admin, refund — how the app is meant to be used.", placeholder: "register → verify → login → checkout → admin", type: "textarea", modes: ["blackbox", "greybox", "whitebox"] },
+  { key: "process_flow", label: "Process flows", hint: "Login, checkout, admin and refund. How the app is meant to be used.", placeholder: "register → verify → login → checkout → admin", type: "textarea", modes: ["blackbox", "greybox", "whitebox"] },
   { key: "critical_workflows", label: "Critical workflows", hint: "The 2-3 flows that matter most.", placeholder: "payment capture, role assignment, data export", type: "text", modes: ["greybox", "whitebox"] },
   { key: "out_of_scope_behaviours", label: "Out-of-scope behaviours", hint: "Beyond the allowlist, what must not be touched.", placeholder: "no spam/emails, no data deletion, skip SSO", type: "text", modes: ["blackbox", "greybox", "whitebox"] },
-  { key: "rate_limit", label: "Rate / volume ceiling", hint: "Allowed request rate and hours.", placeholder: "≤ 5 req/s, business hours only", type: "text", modes: ["blackbox", "greybox", "whitebox"] },
+  { key: "rate_limit", label: "Rate and volume ceiling", hint: "Allowed request rate and hours.", placeholder: "≤ 5 req/s, business hours only", type: "text", modes: ["blackbox", "greybox", "whitebox"] },
   { key: "active_exploitation_authorized", label: "Active exploitation authorized", hint: "May the agent deliver payloads/brute-force? Off = passive discovery only.", type: "toggle", modes: ["blackbox"] },
   { key: "registration_open", label: "Self-service registration open", hint: "May the agent create its own test accounts?", type: "toggle", modes: ["blackbox"] },
   { key: "test_accounts", label: "Test accounts (one per line)", hint: "email:password@https://app.example/login — one per role.", placeholder: "user@example.com:Passw0rd@https://app.example/login", type: "textarea", modes: ["greybox", "whitebox"] },
   { key: "api_spec_urls", label: "API spec URLs", hint: "OpenAPI/Swagger URLs, comma-separated.", placeholder: "https://app.example/openapi.json", type: "text", modes: ["greybox", "whitebox"] },
   { key: "tenant_model", label: "Tenancy model", hint: "Single/multi-tenant + one cross-tenant ID pair.", placeholder: "multi-tenant by org_id; org A 101 vs org B 202", type: "text", modes: ["greybox", "whitebox"] },
-  { key: "source_paths", label: "Source / repo paths", hint: "Where the agent can read source.", placeholder: "/repos/app | gs://bucket/src.zip", type: "text", modes: ["whitebox"] },
+  { key: "source_paths", label: "Source and repository paths", hint: "Where the agent can read source.", placeholder: "/repos/app | gs://bucket/src.zip", type: "text", modes: ["whitebox"] },
   { key: "repo", label: "Repository", hint: "Repo URL and the DEPLOYED commit/tag.", placeholder: "https://github.com/org/app @ abc123", type: "text", modes: ["whitebox"] },
-  { key: "known_findings", label: "Known / accepted risks", hint: "Already-triaged issues.", placeholder: "missing CSP accepted; /debug internal only", type: "textarea", modes: ["whitebox"] },
-  { key: "secrets_locations", label: "Config / secrets locations", hint: "Where config and secrets live.", placeholder: ".env.production, k8s Secrets, Terraform state", type: "text", modes: ["whitebox"] },
-  { key: "fix_lifecycle", label: "Fix / deploy lifecycle", hint: "How fixes land so the PoC can be replayed.", placeholder: "PR to main, deploy within 24h", type: "text", modes: ["whitebox"] },
+  { key: "known_findings", label: "Known and accepted risks", hint: "Already-triaged issues.", placeholder: "missing CSP accepted; /debug internal only", type: "textarea", modes: ["whitebox"] },
+  { key: "secrets_locations", label: "Config and secret locations", hint: "Where config and secrets live.", placeholder: ".env.production, k8s Secrets, Terraform state", type: "text", modes: ["whitebox"] },
+  { key: "fix_lifecycle", label: "Fix and deploy lifecycle", hint: "How fixes land so the PoC can be replayed.", placeholder: "PR to main, deploy within 24h", type: "text", modes: ["whitebox"] },
 ];
 
 export function fieldsForMode(mode: TestingMode): ContextField[] {

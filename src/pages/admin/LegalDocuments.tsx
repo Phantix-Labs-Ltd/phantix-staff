@@ -153,9 +153,9 @@ export default function LegalDocuments() {
                         </span>
                       </td>
                       <td className="td text-xs text-slate-300">{doc.version}</td>
-                      <td className="td text-xs text-slate-500">{doc.effective || "—"}</td>
-                      <td className="td max-w-[280px] truncate text-xs text-slate-400">{doc.summary || "—"}</td>
-                      <td className="td text-xs text-slate-500">{doc.updated_at ? timeAgo(doc.updated_at) : "—"}</td>
+                      <td className="td text-xs text-slate-500">{doc.effective || "Not set"}</td>
+                      <td className="td max-w-[280px] truncate text-xs text-slate-400">{doc.summary || "Not set"}</td>
+                      <td className="td text-xs text-slate-500">{doc.updated_at ? timeAgo(doc.updated_at) : "Not set"}</td>
                       <td className="td text-right">
                         <div className="inline-flex items-center gap-1">
                           {showActiveToggle(doc) && (

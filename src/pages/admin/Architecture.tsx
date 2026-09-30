@@ -69,7 +69,7 @@ export default function Architecture() {
     } catch (err) {
       // §1: 503 artefacts tell staff the exact command to run — surface it.
       if (err instanceof ApiError && err.status === 503) {
-        setDocError(`Not generated on this deployment — ${err.message}`);
+        setDocError(`Not generated on this deployment. ${err.message}`);
       } else {
         setDocError(err instanceof Error ? err.message : "Failed to load document");
       }

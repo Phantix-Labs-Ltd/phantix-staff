@@ -69,7 +69,7 @@ const SEV_DOT: Record<Severity, string> = {
 const COMPOSER_SUGGESTIONS = [
   "Summarize findings so far",
   "What is the next planned step?",
-  "Stay read-only — no state-changing steps",
+  "Stay read-only. No state-changing steps.",
 ];
 
 // Pane size bounds (px). The fluid `.wb-*` type inside each pane scales with
@@ -116,9 +116,9 @@ function NodeInspector({ node }: { node: AttackNode }) {
       ) : (
         <p className="wb-xs text-slate-400">
           {node.status === "active"
-            ? "Working — waiting on first tool result…"
+            ? "Working. Waiting for the first tool result…"
             : node.status === "blocked"
-            ? "Blocked — awaiting approval."
+            ? "Blocked. Waiting for approval."
             : "No telemetry on this node yet."}
         </p>
       )}
@@ -443,7 +443,7 @@ export default function AgiConsole({
     if (work) return { label: work, tool: undefined as string | undefined };
     if (activeNode) {
       return {
-        label: activeNode.status === "blocked" ? `awaiting approval — ${activeNode.label}` : activeNode.label,
+        label: activeNode.status === "blocked" ? `awaiting approval: ${activeNode.label}` : activeNode.label,
         tool: activeNode.tool,
       };
     }
@@ -772,7 +772,7 @@ export default function AgiConsole({
                   <ReasoningPanel text={reasoning} open={reasoningOpen} onToggle={onToggleReasoning} />
                 )}
                 {runningStatus && !clarification && <TypingIndicator label={runningStatus.label} tool={runningStatus.tool} />}
-                {paused && <p className="wb-xs text-severity-medium">Loop paused — agent will not advance.</p>}
+                {paused && <p className="wb-xs text-severity-medium">Loop paused. The agent will not advance.</p>}
                 <div ref={thoughtsStick.endRef} />
               </div>
             )}
@@ -784,7 +784,7 @@ export default function AgiConsole({
                   <span className="wb-2xs rounded-full bg-phantix-800/80 px-1.5 tabular-nums text-slate-400">{tools.length + engineCalls.length}</span>
                   <button
                     type="button"
-                    onClick={() => onInstruction("From now on, run tool commands directly in the sandbox terminal and stream the raw output — prefer that over engine calls where it is safe.")}
+                    onClick={() => onInstruction("From now on, run tool commands directly in the sandbox terminal and . Prefer that over engine calls where it is safe.")}
                     className="wb-2xs ml-auto rounded px-1.5 py-0.5 normal-case tracking-normal text-gold-300 hover:bg-phantix-800"
                     title="Prefill the instruction box to make the agent prefer direct AI terminal execution over engine delegation."
                   >
@@ -794,7 +794,7 @@ export default function AgiConsole({
                 <div ref={toolsStick.scrollerRef} onScroll={toolsStick.onScroll} className="wb-scroll max-h-44 space-y-1.5 overflow-y-auto wb-pad">
                   {tools.length === 0 && engineCalls.length === 0 && (
                     <p className="wb-xs py-3 text-center text-slate-400">
-                      No terminal output yet — the agent is executing via engines. Ask it to run commands in the container for raw output.
+                      No terminal output yet. The agent is executing via engines. Ask it to run commands in the container for raw output.
                     </p>
                   )}
                   {groupedTools.map((row, i) =>
@@ -1044,7 +1044,7 @@ export default function AgiConsole({
               e.preventDefault();
               onSend();
             }}
-            placeholder={loopStopped ? "Loop stopped — send an instruction to continue…" : paused ? "Paused — resume to send" : running ? "Further instructions or override the next step…" : "Session stopped"}
+            placeholder={loopStopped ? "Loop stopped. Send an instruction to continue…" : paused ? "Paused. Resume to send." : running ? "Further instructions or override the next step…" : "Session stopped"}
             disabled={!running || paused}
             rows={1}
             className="wb-md flex-1 resize-none overflow-hidden bg-transparent text-slate-200 outline-none placeholder:text-slate-500 disabled:opacity-50"
@@ -1055,7 +1055,7 @@ export default function AgiConsole({
         <p className="wb-xs mt-1.5 flex items-center gap-1.5 text-slate-400">
           <ShieldCheck size={11} className="shrink-0" />
           {sendHint === "queued"
-            ? "Queued — press Enter again to send now, or wait for the current reply."
+            ? "Queued. Press Enter again to send now, or wait for the current reply."
             : "Scoped to allowlist · high-risk actions require a second confirmation · pause freezes the loop"}
           <span className="ml-auto hidden shrink-0 items-center gap-1 sm:flex">
             <kbd className="wb-2xs rounded border border-phantix-700/50 bg-phantix-900/60 px-1 font-mono text-slate-400">Enter</kbd> send
@@ -1087,7 +1087,7 @@ export default function AgiConsole({
                   onClick={() => { const a = gate; setGate(null); onDecide(a, true, overrideDrafts[a.id] ?? a.proposed_command); }}
                   className="btn-primary flex-1 !py-2 !text-xs"
                 >
-                  Confirm & approve
+                  Confirm and approve
                 </button>
                 <button onClick={() => setGate(null)} className="btn-ghost flex-1 !py-2 !text-xs">Cancel</button>
               </div>

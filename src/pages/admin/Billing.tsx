@@ -201,7 +201,7 @@ export default function BillingAdmin() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <StatCard label="AI Starter (NGN/mo)" value={formatAiNgn(metering?.plan_ai_ngn_mo?.starter)} icon={<CreditCard size={18} />} />
                 <StatCard label="AI Growth (NGN/mo)" value={formatAiNgn(metering?.plan_ai_ngn_mo?.growth)} icon={<CreditCard size={18} />} />
-                <StatCard label="1 AI credit" value={metering ? `₦${metering.credit_ngn}` : "—"} icon={<DollarSign size={18} />} />
+                <StatCard label="1 AI credit" value={metering ? `₦${metering.credit_ngn}` : "Not set"} icon={<DollarSign size={18} />} />
               </div>
               <div className="flex items-center gap-3">
                 <button onClick={openPriceChange} className="btn-secondary text-sm">Change Pricing</button>
@@ -209,7 +209,7 @@ export default function BillingAdmin() {
               </div>
               {extraLoading && !metering && <TableSkeleton rows={3} />}
               {metering && (
-                <CollapsibleCard defaultOpen={false} title="AI credit metering" subtitle={`FX ₦${metering.fx?.ngn_per_usd ?? FX_NGN_PER_USD}/USD · ${formatCredits(metering.plan_credits_mo?.starter)} / ${formatCredits(metering.plan_credits_mo?.growth)} credits`}>
+                <CollapsibleCard defaultOpen={false} title="AI credit metering" subtitle={`FX ₦${metering.fx?.ngn_per_usd ?? FX_NGN_PER_USD}/USD · ${formatCredits(metering.plan_credits_mo?.starter)} of ${formatCredits(metering.plan_credits_mo?.growth)} credits`}>
                   <p className="text-xs text-slate-400 mb-3">{metering.metering_note}</p>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div><span className="text-slate-400">Security primary:</span> <span className="font-mono text-xs text-slate-200">{metering.security_providers?.primary_model}</span></div>
@@ -235,7 +235,7 @@ export default function BillingAdmin() {
               <input type="range" min={0} max={100} value={discountPercent} onChange={e => setDiscountPercent(Number(e.target.value))} className="w-full accent-gold-400" />
               <div><label className="label">Yearly months equivalent</label><input className="input font-mono w-20" type="number" min={1} max={12} value={newYearlyMonthEq} onChange={e => setNewYearlyMonthEq(e.target.value)} /></div>
               <div className="flex items-center gap-2"><label className="label">Active</label><button onClick={() => setIsActive(!isActive)}>{isActive ? <ToggleRight size={20} className="text-emerald-400" /> : <ToggleLeft size={20} className="text-slate-500" />}</button><span className="text-xs text-slate-400">{isActive ? "New subscriptions allowed" : "Blocking new subscriptions"}</span></div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-severity-high/10 border border-severity-high/20 text-xs text-severity-high"><AlertTriangle size={14} />Updates Free / Starter / Growth / Enterprise list prices for landing and checkout. Starter still drives Paystack renewals.</div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-severity-high/10 border border-severity-high/20 text-xs text-severity-high"><AlertTriangle size={14} />Updates the Free, Starter, Growth and Enterprise list prices for landing and checkout. Starter still drives Paystack renewals.</div>
               <button onClick={handlePriceChange} className="btn-primary w-full">Confirm</button>
             </div>
           </Modal>
@@ -269,7 +269,7 @@ export default function BillingAdmin() {
           {extraLoading && coupons.length === 0 ? <TableSkeleton rows={3} /> : coupons.length === 0 ? <EmptyState icon={<Ticket size={24} />} title="No coupons" body="Generate beta access codes for trial access." /> : (
             <div className="space-y-2">
               {coupons.map(c => (
-                <Card key={c.id}><div className="flex flex-wrap items-center gap-3"><span className={cx("chip", c.is_active ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300" : "border-slate-500/50 bg-slate-500/10 text-slate-500")}>{c.is_active ? "Active" : "Inactive"}</span><span className="font-mono text-sm text-slate-200">{c.code}</span><span className="text-xs text-slate-400">{c.label} — {c.duration_days}d · {c.redemption_count}{c.max_redemptions ? `/${c.max_redemptions}` : ""} used</span><span className="ml-auto text-xs text-slate-500">{timeAgo(c.created_at)}</span>{c.is_active && <button onClick={() => handleDeactivateCoupon(c.id)} className="btn-ghost text-xs px-2 py-1 text-severity-critical"><XCircle size={12} /></button>}</div></Card>
+                <Card key={c.id}><div className="flex flex-wrap items-center gap-3"><span className={cx("chip", c.is_active ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300" : "border-slate-500/50 bg-slate-500/10 text-slate-500")}>{c.is_active ? "Active" : "Inactive"}</span><span className="font-mono text-sm text-slate-200">{c.code}</span><span className="text-xs text-slate-400">{c.label}: {c.duration_days}d · {c.redemption_count}{c.max_redemptions ? ` of ${c.max_redemptions}` : ""} used</span><span className="ml-auto text-xs text-slate-500">{timeAgo(c.created_at)}</span>{c.is_active && <button onClick={() => handleDeactivateCoupon(c.id)} className="btn-ghost text-xs px-2 py-1 text-severity-critical"><XCircle size={12} /></button>}</div></Card>
               ))}
             </div>
           )}
@@ -284,7 +284,7 @@ export default function BillingAdmin() {
               <button onClick={handleGenerateCoupons} className="btn-primary w-full">Generate</button>
               {generatedCodes.length > 0 && (
                 <div className="mt-3 p-3 rounded-md bg-gold-400/10 border border-gold-400/20">
-                  <p className="text-xs font-semibold text-gold-300 mb-2">Copy these codes — they won't be shown again:</p>
+                  <p className="text-xs font-semibold text-gold-300 mb-2">Copy these codes. They will not be shown again:</p>
                   {generatedCodes.map(code => <div key={code} className="flex items-center gap-2 font-mono text-xs text-white py-1"><span>{code}</span><button onClick={() => { navigator.clipboard.writeText(code); toast("info", "Copied"); }} className="text-gold-400"><Copy size={11} /></button></div>)}
                 </div>
               )}

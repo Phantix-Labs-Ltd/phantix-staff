@@ -50,7 +50,7 @@ export default function ContributeLearning() {
     <div>
       <PageHeader
         title="Learning inbox"
-        description="Auto-minted skills and tool provisions waiting for a human. Anonymized — no customer security inventory here."
+        description="Auto-minted skills and tool provisions that wait for a human. Anonymized: no customer security inventory here."
         actions={
           <button type="button" className="btn-ghost text-xs !py-2" onClick={() => void load()}>
             <RefreshCw size={13} className={cx(loading && "animate-spin")} />
@@ -109,7 +109,7 @@ export default function ContributeLearning() {
                   {data.pending_tools.map((t, i) => (
                     <div key={t.id ?? i} className="rounded-md border border-phantix-700/40 px-3 py-2">
                       <p className="text-sm text-slate-200">{t.tool || `Request #${t.id}`}</p>
-                      <p className="text-[12px] text-slate-500">{t.engine_id || "—"} · {t.status}</p>
+                      <p className="text-[12px] text-slate-500">{t.engine_id || "Not set"} · {t.status}</p>
                     </div>
                   ))}
                 </div>

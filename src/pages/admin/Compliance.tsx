@@ -76,11 +76,11 @@ function categoryFor(fw: { jurisdiction_triggers?: unknown; framework_id?: strin
     if (t.region) return "international";
     if (t.industry) return "industry";
   }
-  return "—";
+  return "Not set";
 }
 
 function controlLabel(c: SourceControl): string {
-  return c.control_id ? `${c.framework_id ?? ""} · ${c.control_id}`.replace(/^ · /, "") : "—";
+  return c.control_id ? `${c.framework_id ?? ""} · ${c.control_id}`.replace(/^ · /, "") : "Not set";
 }
 
 export default function ComplianceAdmin() {
@@ -147,7 +147,7 @@ export default function ComplianceAdmin() {
       toast(
         "error",
         st === 502 || st === 503 ? "Storage unavailable" : "Upload failed",
-        st === 502 || st === 503 ? "Storage unavailable — retry." : e instanceof Error ? e.message : "",
+        st === 502 || st === 503 ? "Storage unavailable. Try again." : e instanceof Error ? e.message : "",
       );
     } finally {
       setUploadBusy(false);
@@ -477,11 +477,11 @@ export default function ComplianceAdmin() {
                             ))}
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-600">—</span>
+                          <span className="text-xs text-slate-600">Not set</span>
                         )}
                       </td>
-                      <td className="td text-xs text-slate-400">{q.category || "—"}</td>
-                      <td className="td text-xs capitalize text-slate-300">{q.risk || "—"}</td>
+                      <td className="td text-xs text-slate-400">{q.category || "Not set"}</td>
+                      <td className="td text-xs capitalize text-slate-300">{q.risk || "Not set"}</td>
                       <td className="td text-xs">
                         {q.is_expert_managed
                           ? <span className="chip border-gold-400/30 bg-gold-400/10 text-gold-300">expert</span>
@@ -536,7 +536,7 @@ export default function ComplianceAdmin() {
               })}
               {!data.length && <span className="text-xs text-slate-500">No frameworks loaded.</span>}
             </div>
-            <p className="mt-1 text-[13px] text-slate-500">Select one or more — this is preserved on save.</p>
+            <p className="mt-1 text-[13px] text-slate-500">Select one or more. This is preserved on save.</p>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

@@ -135,7 +135,7 @@ export default function EmailTemplates() {
                         <StatusBadge status={t.is_active ? "active" : "inactive"} />
                       </button>
                     </td>
-                    <td className="td text-xs text-slate-500">{t.updated_at ? timeAgo(t.updated_at) : "—"}</td>
+                    <td className="td text-xs text-slate-500">{t.updated_at ? timeAgo(t.updated_at) : "Not set"}</td>
                     <td className="td text-right">
                       <div className="inline-flex items-center gap-1">
                         <button className="btn-ghost !px-2 !py-1 !text-xs" onClick={() => openEdit(t)}><Pencil size={12} /> Edit</button>

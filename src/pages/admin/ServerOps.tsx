@@ -200,7 +200,7 @@ function normalize(raw: any): ServerOverview {
 }
 
 function formatUptime(sec: number): string {
-  if (!sec || sec < 0) return "—";
+  if (!sec || sec < 0) return "Not set";
   const d = Math.floor(sec / 86400);
   const h = Math.floor((sec % 86400) / 3600);
   const m = Math.floor((sec % 3600) / 60);
@@ -306,7 +306,7 @@ export default function ServerOps() {
     <div>
       <PageHeader
         title="Server Monitoring"
-        description="Realtime runtime activity — processes, resources, pools, workers"
+        description="Realtime runtime activity: processes, resources, pools and workers"
         actions={
           <div className="flex items-center gap-2">
             <span className={cx("flex items-center gap-1.5 text-xs font-mono", live ? "text-emerald-400" : "text-slate-500")}>
@@ -343,7 +343,7 @@ export default function ServerOps() {
               <ProgressBar value={cpuPct} color={cpuPct > 85 ? "#F43F5E" : cpuPct > 60 ? "#FB923C" : "#38BDF8"} />
               <div className="mt-3 flex justify-between text-xs text-slate-400">
                 <span>Load avg</span>
-                <span className="font-mono text-slate-300">{d.resources.load_avg.length ? d.resources.load_avg.map((v) => v.toFixed(2)).join(" / ") : "—"}</span>
+                <span className="font-mono text-slate-300">{d.resources.load_avg.length ? d.resources.load_avg.map((v) => v.toFixed(2)).join(" · ") : "Not set"}</span>
               </div>
             </Card>
             <Card>

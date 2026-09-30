@@ -38,12 +38,12 @@ export interface EnterpriseAiAllowance {
 export const FX_NGN_PER_USD = 1500;
 
 export function formatAiNgn(n: number | null | undefined): string {
-  if (n == null || Number.isNaN(Number(n))) return "—";
+  if (n == null || Number.isNaN(Number(n))) return "Not set";
   return `₦${Number(n).toLocaleString()}`;
 }
 
 export function formatCredits(n: number | string | null | undefined): string {
-  if (n == null) return "—";
+  if (n == null) return "Not set";
   if (typeof n === "string") return n;
   return n.toLocaleString();
 }

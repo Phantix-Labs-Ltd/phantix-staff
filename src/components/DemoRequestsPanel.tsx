@@ -151,7 +151,7 @@ export function DemoRequestsPanel() {
         ) : error ? (
           <ErrorState
             title="Demo requests unavailable"
-            body={`${error} The demo-request queue could not be loaded — capture is unaffected, new leads are still being stored.`}
+            body={`${error} The demo-request queue . Capture is unaffected. New leads are still being stored.`}
             onRetry={() => void load(filter, search)}
           />
         ) : !rows.length ? (
@@ -187,19 +187,19 @@ export function DemoRequestsPanel() {
                     <td className="td">
                       <span className="flex items-center gap-2 font-medium text-slate-200">
                         <Building2 size={13} className="shrink-0 text-slate-500" />
-                        {r.company || "—"}
+                        {r.company || "Not set"}
                       </span>
                     </td>
                     <td className="td">
 <span className="block max-w-[28rem] truncate" title={String(r.email ?? "")}>
-                        <span className="text-slate-200">{r.name || "—"}</span>
+                        <span className="text-slate-200">{r.name || "Not set"}</span>
                         <span className="ml-2 font-mono text-[13px] text-slate-500">{r.email}</span>
                       </span>
                     </td>
                     <td className="td text-xs text-slate-400">{r.team_size}</td>
                     <td className="td"><span className="chip text-[12px]">{r.source}</span></td>
                     <td className="td text-xs text-slate-400" title={formatDateTime(r.created_at)}>
-                      {r.created_at ? timeAgo(r.created_at) : "—"}
+                      {r.created_at ? timeAgo(r.created_at) : "Not set"}
                     </td>
                     <td className="td"><StatusPill status={r.status} /></td>
                   </tr>
@@ -276,7 +276,7 @@ function DemoRequestDetail({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Contact" value={request.name || "—"} />
+          <Field label="Contact" value={request.name || "Not set"} />
           <Field
             label="Work email"
             value={
@@ -294,7 +294,7 @@ function DemoRequestDetail({
                   <Phone size={12} /> {request.phone}
                 </a>
               ) : (
-                "—"
+                "Not set"
               )
             }
           />
@@ -328,10 +328,10 @@ function DemoRequestDetail({
           <p className="label">Attribution</p>
           <div className="mt-1 space-y-1.5 rounded-lg border border-phantix-700/40 bg-phantix-950/50 p-3 font-mono text-[13px] text-slate-400">
             <p><span className="text-slate-500">source</span> {request.source}</p>
-            <p><span className="text-slate-500">path</span> {request.path ?? "—"}</p>
+            <p><span className="text-slate-500">path</span> {request.path ?? "Not set"}</p>
             <p className="flex items-start gap-1.5">
               <Link2 size={11} className="mt-0.5 shrink-0 text-slate-500" />
-              <span className="break-all">{request.referrer ?? "(direct / none)"}</span>
+              <span className="break-all">{request.referrer ?? "(direct or none)"}</span>
             </p>
             {request.utm &&
               Object.entries(request.utm).map(([k, v]) => (

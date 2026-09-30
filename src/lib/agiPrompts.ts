@@ -278,17 +278,17 @@ export function buildSystemPrompt(params: {
   const { instruction, plan, allowlist = [], forbidden = [], roe = "", autonomy = "medium" } = params;
   const skillBlock = plan.skills
     .map((s) => `### ${s.skill_id} (efficiency=${s.efficiency}, ${s.body_loaded ? "full" : "card only"})\n${s.title ?? ""}`)
-    .join("\n\n") || "(no skills resolved — use general recon)";
+    .join("\n\n") || "(no skills resolved, use general recon)";
   return [
     "You are SECUREGRAPH AGI, a security-engineering agent (OpenCode-like for pentest).",
     `MEDIUM AUTONOMY: decide recon steps per org asset yourself; auto-run reads; gate auth, registration, and exploits.`,
     `AUTONOMY=${autonomy}.`,
-    "Tools run ONLY inside the engagement container — never the host terminal. No direct database access.",
+    "Tools run ONLY inside the engagement container, never the host terminal. No direct database access.",
     "Never claim a finding without tool evidence.",
     `ALLOWLIST: ${allowlist.slice(0, 40)}.`,
     `FORBIDDEN_ACTIONS: ${forbidden}.`,
     `ROE: ${roe || "n/a"}`,
-    `## Skill plan (prioritized — use these)`,
+    `## Skill plan (prioritized, use these)`,
     JSON.stringify({ objective: instruction, intents: plan.intents, skill_ids: plan.skill_ids }),
     `## Loaded skills`,
     skillBlock,
@@ -313,7 +313,7 @@ const PROMPT_STORAGE_KEY = "phantix_staff_agi_prompts";
 export const DEFAULT_PROMPTS: AgiPromptDef[] = [
   {
     key: "vapt_web",
-    label: "VAPT — web application",
+    label: "VAPT web application",
     system_prompt: "Run a scoped VAPT assessment of the allowlisted web application. Enumerate, fingerprint, identify vulnerabilities, verify with evidence, and report. State-changing steps require approval.",
     user_template: "VAPT scan the web application: {{targets}}",
     intents: ["vapt", "web"],
@@ -322,7 +322,7 @@ export const DEFAULT_PROMPTS: AgiPromptDef[] = [
   },
   {
     key: "recon_enumeration",
-    label: "Recon — enumeration",
+    label: "Recon and enumeration",
     system_prompt: "Passive and active enumeration of the allowlisted hosts: subdomains, DNS, ports, and services. Read-only.",
     user_template: "Enumerate the allowlisted hosts: {{targets}}",
     intents: ["enumeration", "recon"],
@@ -331,7 +331,7 @@ export const DEFAULT_PROMPTS: AgiPromptDef[] = [
   },
   {
     key: "mobile_dynamic",
-    label: "Mobile — dynamic analysis",
+    label: "Mobile dynamic analysis",
     system_prompt: "Dynamic analysis of the selected APK: run preflight first, then hook and instrument with Frida. Requires mobile APK asset.",
     user_template: "Dynamic mobile analysis: {{targets}}",
     intents: ["mobile"],
@@ -340,7 +340,7 @@ export const DEFAULT_PROMPTS: AgiPromptDef[] = [
   },
   {
     key: "soc_triage",
-    label: "SOC — detection triage",
+    label: "SOC detection triage",
     system_prompt: "Triage detections and correlate alerts into cases. Read-only; propose any state-changing response for approval.",
     user_template: "Triage detections and investigate: {{targets}}",
     intents: ["soc"],

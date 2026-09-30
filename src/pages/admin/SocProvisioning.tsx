@@ -82,7 +82,7 @@ export default function SocProvisioning() {
     <div>
       <PageHeader
         title="SOC Provisioning"
-        description="Seed global IR playbooks, runbooks, and the MITRE ATT&CK catalog into an organization's security database. Staff-only authoring actions."
+        description="Seed global IR playbooks, runbooks, and the MITRE ATT&CK catalog into the security database of an organization. Staff-only authoring actions."
         actions={
           <button onClick={() => void loadClients()} disabled={clientsLoading} className="btn-ghost text-sm px-3 py-1.5">
             <RefreshCw size={14} className={cx(clientsLoading && "animate-spin")} /> Load clients
@@ -93,7 +93,7 @@ export default function SocProvisioning() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* Org picker */}
         <Card className="lg:col-span-1 self-start">
-          <CardHeader title="Target organization" subtitle="Seeds write into the chosen org's security DB" />
+          <CardHeader title="Target organization" subtitle="Seeds write into the security database of the chosen organization" />
           {!clientsLoaded && !clientsLoading ? (
             <div className="py-6 text-center">
               <button className="btn-primary" onClick={() => void loadClients()}>
@@ -147,7 +147,7 @@ export default function SocProvisioning() {
           <Card>
             <CardHeader
               title="Seed catalog"
-              subtitle={selected ? `Targeting ${selected.name} (#${selected.id}) — writes are idempotent (upsert on id)` : "Pick an organization first"}
+              subtitle={selected ? `Targeting ${selected.name} (#${selected.id}). Writes are idempotent, with an upsert on the id.` : "Pick an organization first"}
               action={selected && <span className="chip border-emerald-400/30 bg-emerald-400/10 text-emerald-300"><ShieldCheck size={11} className="mr-1 inline" /> {selected.slug}</span>}
             />
             {!selected ? (

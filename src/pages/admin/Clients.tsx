@@ -417,7 +417,7 @@ export default function Clients() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg bg-phantix-950/60 border border-phantix-700/40 p-3">
                     <p className="text-xs text-slate-400">Plan</p>
-                    <p className="text-sm text-white font-medium">{aiAllowance?.plan || c.plan || "—"}</p>
+                    <p className="text-sm text-white font-medium">{aiAllowance?.plan || c.plan || "Not set"}</p>
                   </div>
                   <div className="rounded-lg bg-phantix-950/60 border border-phantix-700/40 p-3">
                     <p className="text-xs text-slate-400">AI NGN / mo</p>
@@ -469,7 +469,7 @@ export default function Clients() {
                   </div>
                   <div className="rounded-lg bg-phantix-950/60 border border-phantix-700/40 p-3">
                     <p className="text-xs text-slate-400">Override</p>
-                    <p className="text-sm text-white font-medium">{epLimits?.endpoint_monitors.override ?? "—"}</p>
+                    <p className="text-sm text-white font-medium">{epLimits?.endpoint_monitors.override ?? "Not set"}</p>
                   </div>
                   <div className="rounded-lg bg-phantix-950/60 border border-phantix-700/40 p-3">
                     <p className="text-xs text-slate-400">Effective</p>
@@ -533,7 +533,7 @@ export default function Clients() {
                             <p className="text-sm text-white">{app.label}</p>
                             <p className="truncate text-[13px] text-slate-500">
                               {app.key === "core"
-                                ? "Always on — the entry point"
+                                ? "Always on. This is the entry point."
                                 : app.entitled
                                   ? on
                                     ? "Enabled"
@@ -552,7 +552,7 @@ export default function Clients() {
                                   ? on
                                     ? "Disable for this client"
                                     : "Enable for this client"
-                                  : "Enable ahead of the plan (trial / support)"
+                                  : "Enable ahead of the plan for a trial or support"
                               }
                             >
                               {appBusy === app.key ? "…" : on ? "Disable" : app.entitled ? "Enable" : "Enable (trial)"}

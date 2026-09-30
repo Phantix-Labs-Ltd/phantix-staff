@@ -39,7 +39,7 @@ export default function StaffPasswordResetComplete() {
         <div className="mb-8 text-center"><BrandWordmark className="mx-auto block h-11" /><h1 className="mt-5 font-display text-2xl font-bold text-white">Choose a new password</h1></div>
         <div className="card p-7">
           {done ? (
-            <div className="text-center"><CheckCircle2 size={30} className="mx-auto text-emerald-400" /><h2 className="mt-3 font-display text-lg font-semibold text-white">Password updated</h2><p className="mt-2 text-sm text-slate-400">Your staff password has been reset successfully.</p><Link to="/login" className="btn-primary mt-6 w-full"><ArrowRight size={15} /> Sign in</Link></div>
+            <div className="text-center"><CheckCircle2 size={30} className="mx-auto text-emerald-400" /><h2 className="mt-3 font-display text-lg font-semibold text-white">Password updated</h2><p className="mt-2 text-sm text-slate-400">Your staff password is reset.</p><Link to="/login" className="btn-primary mt-6 w-full"><ArrowRight size={15} /> Sign in</Link></div>
           ) : (
             <form onSubmit={submit} className="space-y-4">
               <div><label className="label">New password</label><div className="relative"><KeyRound size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" /><input autoFocus type="password" className="input !pl-10" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" /></div></div>

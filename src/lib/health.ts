@@ -83,7 +83,7 @@ export const SERVICE_GROUPS: { title: string; blurb: string; services: string[] 
     ],
   },
   {
-    title: "Schedulers & daemons",
+    title: "Schedulers and daemons",
     blurb: "Timed work and the alert dispatcher.",
     services: ["beat", "alert_daemon"],
   },

@@ -333,7 +333,7 @@ function SessionTerminal({ session, engagement, onStopped }: { session: AgiSessi
       else if (event === "skill_handoff") {
         try {
           const p = JSON.parse(String(data)) as { title?: string; reason?: string; skill_id?: string };
-          setWorkingOn(`Skill ${p.title || p.skill_id || "playbook"} handed to OpenCode — ${p.reason || "contractor"}`);
+          setWorkingOn(`Skill ${p.title || p.skill_id || "playbook"} handed to OpenCode. ${p.reason || "contractor"}`);
         } catch { /* ignore */ }
       }
       else if (event === "engine_call") {
@@ -388,7 +388,7 @@ function SessionTerminal({ session, engagement, onStopped }: { session: AgiSessi
               seq: -2 - prev.filter((r) => r.seq < 0).length,
               role: "system",
               content:
-                `Campaign complete — ${p.found ?? 0} finding(s) across ${p.assets ?? 0} asset(s) ` +
+                `Campaign complete: ${p.found ?? 0} finding(s) across ${p.assets ?? 0} asset(s) ` +
                 `in ${p.summary?.elapsed ?? "?"}s. Categories: ${cats}`,
               meta: { kind: "campaign_done", event: "campaign_done", ...p },
               created_at: new Date().toISOString(),
@@ -411,7 +411,7 @@ function SessionTerminal({ session, engagement, onStopped }: { session: AgiSessi
               seq: -2 - prev.filter((r) => r.seq < 0).length,
               role: "system",
               content:
-                `Decision review — verdict: ${p.verdict || "continue"}. ` +
+                `Decision review. Verdict: ${p.verdict || "continue"}. ` +
                 `${(p.unresolved || []).length} open lead(s); next: ` +
                 `${(p.next || []).join(", ") || "none"}`,
               meta: { kind: "decision_review", event: "decision_review", ...p },
@@ -435,7 +435,7 @@ function SessionTerminal({ session, engagement, onStopped }: { session: AgiSessi
                 seq: -2 - prev.filter((r) => r.seq < 0).length,
                 role: "system",
                 content:
-                  `Verification — ${p.count} finding(s): ${p.verified ?? 0} confirmed, ` +
+                  `Verification: ${p.count} finding(s): ${p.verified ?? 0} confirmed, ` +
                   `${p.dismissed ?? 0} dismissed, ${p.inconclusive ?? 0} inconclusive`,
                 meta: { kind: "verify_all", event: "verify_all", ...p },
                 created_at: new Date().toISOString(),
@@ -459,7 +459,7 @@ function SessionTerminal({ session, engagement, onStopped }: { session: AgiSessi
               seq: -2 - prev.filter((r) => r.seq < 0).length,
               role: "system",
               content:
-                `Candidate dropped as a non-vulnerability — "${p.title || "candidate"}" ` +
+                `Candidate dropped as a non-vulnerability. "${p.title || "candidate"}" ` +
                 `(${p.verdict || p.reason || "control"}, confidence ${p.confidence ?? "?"})`,
               meta: { kind: "finding_dropped", event: "finding_dropped", ...p },
               created_at: new Date().toISOString(),
@@ -832,7 +832,7 @@ function SessionControls({ session, running }: { session: AgiSession; running: b
                 </div>
               ))}
               <input value={infoNote} onChange={(e) => setInfoNote(e.target.value)} placeholder="Note (optional)" className={field} />
-              <button onClick={() => void submitInfo()} disabled={infoSaving} className="btn-primary w-full !py-2 !text-[13px]">{infoSaving ? <Loader2 size={12} className="mr-1 inline animate-spin" /> : <Send size={12} className="mr-1 inline" />} Provide info & re-check</button>
+              <button onClick={() => void submitInfo()} disabled={infoSaving} className="btn-primary w-full !py-2 !text-[13px]">{infoSaving ? <Loader2 size={12} className="mr-1 inline animate-spin" /> : <Send size={12} className="mr-1 inline" />} Provide info and re-check</button>
             </>
           )}
         </div>
@@ -864,10 +864,10 @@ function SessionControls({ session, running }: { session: AgiSession; running: b
       {/* OTP */}
       {tab === "otp" && (
         <div className="space-y-2">
-          <p className="text-[13px] text-slate-400">Deliver an MFA / OTP code to a waiting background job in the container.</p>
+          <p className="text-[13px] text-slate-400">Deliver an MFA or OTP code to a waiting background job in the container.</p>
           <div className="flex flex-wrap items-end gap-2">
             <div className="flex-1">
-              <label className="mb-0.5 block text-[12px] font-semibold uppercase tracking-wider text-slate-400">OTP / MFA code</label>
+              <label className="mb-0.5 block text-[12px] font-semibold uppercase tracking-wider text-slate-400">OTP or MFA code</label>
               <input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="e.g. 123456" className={field} />
             </div>
             <div className="flex-1">
@@ -1006,7 +1006,7 @@ function EngagementForm({ orgs, onCreated }: { orgs: { id: number; name: string 
           ))}
         </div>
         <div className="mt-2">
-          <label className="mb-1 block text-[13px] font-semibold text-slate-400">Mobile APK (optional — only for mobile pentests)</label>
+          <label className="mb-1 block text-[13px] font-semibold text-slate-400">Mobile APK, optional, only for mobile pentests</label>
           <select value={form.mobile_apk_asset_id} onChange={(e) => setForm({ ...form, mobile_apk_asset_id: Number(e.target.value) })} className={field}>
             <option value={0}>None — web / network only</option>
             {apks.map((a) => <option key={a.id} value={a.id}>{a.name} ({a.value})</option>)}
@@ -1043,7 +1043,7 @@ function EngagementForm({ orgs, onCreated }: { orgs: { id: number; name: string 
         <p className="mt-1 text-[12px] leading-5 text-slate-500">{TESTING_MODES.find((m) => m.id === mode)?.description}</p>
       </div>
       <div>
-        <label className="mb-1 block text-[13px] font-semibold text-slate-400">Engagement context — answers the agent up front so it does not stop to ask</label>
+        <label className="mb-1 block text-[13px] font-semibold text-slate-400">Engagement context. This answers the agent up front, so it does not stop to ask.</label>
         <div className="mt-1.5">
           <EngagementContextFields mode={mode} values={ctx} onChange={setCtx} disabled={creating} fieldClass={field} />
         </div>
@@ -1242,7 +1242,7 @@ function EngagementConfigEditor({
           <p className="mt-1 text-[12px] leading-5 text-slate-500">{TESTING_MODES.find((m) => m.id === mode)?.description}</p>
         </div>
         <div>
-          <label className="mb-1 block text-[12px] font-semibold uppercase tracking-wider text-slate-500">Engagement context (suppresses the agent's questions)</label>
+          <label className="mb-1 block text-[12px] font-semibold uppercase tracking-wider text-slate-500">Engagement context. This suppresses the questions of the agent.</label>
           <EngagementContextFields
             mode={mode}
             values={ctx}
@@ -1357,7 +1357,7 @@ function SkillPrioritizeModal({
           Retire the non-prioritized imported platform skills so the agent stops ranking across
           hundreds it will never select. Skills are{" "}
           <strong className="text-slate-300">deprecated, never deleted</strong>, and restoring
-          re-activates them. Only org-less imported skills are touched — org, manual, built-in,
+          re-activates them. Only org-less imported skills are touched. Org, manual, built-in,
           mined and verification-pack skills are always kept.
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -1408,8 +1408,8 @@ function SkillPrioritizeModal({
               {result.dry_run ? "preview" : "applied"}
             </p>
             <p className="mt-1 text-slate-400">
-              {result.candidates ?? 0} candidates · kept {result.kept ?? "—"} · retired{" "}
-              {result.deprecated ?? "—"}
+              {result.candidates ?? 0} candidates · kept {result.kept ?? "Not set"} · retired{" "}
+              {result.deprecated ?? "Not set"}
               {result.restored != null ? ` · restored ${result.restored}` : ""}
             </p>
             {(result.sample_deprecated ?? []).length > 0 && (
@@ -1777,8 +1777,8 @@ export default function AgiAdmin() {
                   <div>
                     <label className="mb-1 block text-[12px] font-semibold uppercase tracking-wider text-slate-500">Autonomy</label>
                     <select value={autonomy} onChange={(e) => setAutonomy(e.target.value as "low" | "medium" | "high")} className="input !w-auto !py-1.5 text-[13px]">
-                      <option value="low">low — operator-driven</option>
-                      <option value="medium">medium — auto recon, gate auth</option>
+                      <option value="low">low, operator-driven</option>
+                      <option value="medium">medium, automatic recon, gate auth</option>
                       <option value="high">high — reserved</option>
                     </select>
                   </div>
@@ -2239,7 +2239,7 @@ function PolicyPanel({ toast, policies }: { toast: (k: "success" | "error" | "in
     <div className="space-y-3">
       {active && (
         <Card>
-          <CardHeader title={active.title} subtitle={`Version ${active.version} · published ${active.published_at ? formatDateTime(active.published_at) : "—"}`} action={<StatusBadge status="active" />} />
+          <CardHeader title={active.title} subtitle={`Version ${active.version} · published ${active.published_at ? formatDateTime(active.published_at) : "Not set"}`} action={<StatusBadge status="active" />} />
           <div
             className="prose-doc max-w-none max-h-72 overflow-y-auto overflow-x-hidden break-words rounded-md bg-phantix-950/60 p-4"
             dangerouslySetInnerHTML={{ __html: marked.parse(active.body_md) as string }}
@@ -2261,7 +2261,7 @@ function PolicyPanel({ toast, policies }: { toast: (k: "success" | "error" | "in
             </div>
           ))}
         </div>
-        <p className="mt-3 text-[13px] text-slate-500">When a new active version is published, customers must accept again before using the Autonomous Agent.</p>
+        <p className="mt-3 text-[13px] text-slate-500">When a new active version is published, customers must accept again before they use the Autonomous Agent.</p>
       </CollapsibleCard>
 
       <Modal open={open} onClose={() => setOpen(false)} title="Publish agent usage agreement" wide>

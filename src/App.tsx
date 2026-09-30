@@ -40,6 +40,7 @@ import SocProvisioning from "@/pages/admin/SocProvisioning";
 import EmailTemplates from "@/pages/admin/EmailTemplates";
 import LegalDocuments from "@/pages/admin/LegalDocuments";
 import WeeklyAdmin from "@/pages/admin/Weekly";
+import InternalAlerts from "@/pages/admin/InternalAlerts";
 import ContributeHome from "@/pages/contribute/ContributeHome";
 import ContributeKnowledge from "@/pages/contribute/ContributeKnowledge";
 import ContributeCapabilities from "@/pages/contribute/ContributeCapabilities";
@@ -166,6 +167,7 @@ export default function App() {
             <Route path="/terminal" element={<RequireSuperadmin><SuperadminTerminal /></RequireSuperadmin>} />
             <Route path="/billing" element={<RequireSuperadmin><BillingAdmin /></RequireSuperadmin>} />
             <Route path="/staff" element={<RequireSuperadmin><StaffUsers /></RequireSuperadmin>} />
+            <Route path="/internal-alerts" element={<RequireSuperadmin><InternalAlerts /></RequireSuperadmin>} />
 
             {/* Default redirects */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

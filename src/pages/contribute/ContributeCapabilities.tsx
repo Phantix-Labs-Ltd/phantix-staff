@@ -123,7 +123,7 @@ export default function ContributeCapabilities() {
         path_hint: seedView.path_hint,
         body_yaml: bodyYaml,
       });
-      toast("success", "Draft created", `${seedView.slug} — now editable`);
+      toast("success", "Draft created", `${seedView.slug}. Now editable.`);
       await load();
       if (res?.id) await openPack(res.id);
     } catch (e) {
@@ -266,11 +266,11 @@ export default function ContributeCapabilities() {
         </Card>
 
         <Card>
-          <CardHeader title="Drafts & review" subtitle={`${items.length} draft${items.length === 1 ? "" : "s"}`} />
+          <CardHeader title="Drafts and review" subtitle={`${items.length} draft${items.length === 1 ? "" : "s"}`} />
           {loading ? (
             <div className="flex justify-center py-6"><Spinner className="h-5 w-5" /></div>
           ) : !items.length ? (
-            <p className="text-xs text-slate-500">No drafts yet — fork a seeded YAML or create one.</p>
+            <p className="text-xs text-slate-500">No drafts yet. Fork a seeded YAML, or create one.</p>
           ) : (
             <div className="max-h-[40vh] space-y-2 overflow-auto pr-1">
               {items.map((p) => (
@@ -322,7 +322,7 @@ export default function ContributeCapabilities() {
               {seedView && !active && (
                 <>
                   <button type="button" className="btn-primary text-xs !py-1.5" disabled={busy} onClick={() => void forkSeed()}>
-                    {busy ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />} Save as draft & edit
+                    {busy ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />} Save as draft and edit
                   </button>
                   <span className="self-center text-[13px] text-slate-500">Forking creates an editable draft; the shipped YAML is untouched until approved.</span>
                 </>

@@ -7,6 +7,7 @@ import {
   Zap, Globe, AlertTriangle, ScanLine, BarChart3, RefreshCw,
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
   ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronDown, MoreHorizontal, Newspaper,
+  BellRing,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { APP_URL } from "@/lib/links";
@@ -136,6 +137,7 @@ const navSections: {
     items: [
       { to: "/super-logs", label: "Centralized Logs", icon: <FileText size={18} />, superadminOnly: true },
       { to: "/billing", label: "Billing", icon: <BarChart3 size={18} />, superadminOnly: true },
+      { to: "/internal-alerts", label: "Internal Alerts", icon: <BellRing size={18} />, superadminOnly: true },
       { type: "dropdown", label: "More Operations", icon: <MoreHorizontal size={18} />, items: moreOperationsSubItems },
     ],
   },
