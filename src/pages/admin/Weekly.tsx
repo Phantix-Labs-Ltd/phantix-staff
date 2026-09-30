@@ -220,7 +220,7 @@ export default function WeeklyAdmin() {
     <div>
       <PageHeader
         title="The SecureGraph Weekly"
-        description="Write, edit and publish the Weekly. Posts are created only here — the public site shows what you publish, and drafts stay private."
+        description="Write, edit and publish the Weekly. Posts are created only here. The public site shows what you publish, and drafts stay private."
         actions={
           <>
             <button onClick={posts.refresh} className="btn-ghost !px-3 !py-1.5" aria-label="Refresh posts" title="Refresh">
@@ -293,8 +293,8 @@ export default function WeeklyAdmin() {
                       </p>
                     </td>
                     <td className="td"><StatusBadge status={p.status === "published" ? "published" : "draft"} /></td>
-                    <td className="td text-xs text-slate-400">{p.date || "—"}</td>
-                    <td className="td text-xs text-slate-500">{p.updated_at ? timeAgo(p.updated_at) : "—"}</td>
+                    <td className="td text-xs text-slate-400">{p.date || "Not set"}</td>
+                    <td className="td text-xs text-slate-500">{p.updated_at ? timeAgo(p.updated_at) : "Not set"}</td>
                     <td className="td text-right">
                       <div className="inline-flex items-center gap-1">
                         <button className="btn-ghost !px-2 !py-1 !text-xs" onClick={() => openEdit(p)}>
@@ -371,14 +371,14 @@ export default function WeeklyAdmin() {
               </div>
               <div className="sm:col-span-3">
                 <label className="label" htmlFor="w-excerpt">
-                  Excerpt <span className="font-normal normal-case text-slate-500">({draft.excerpt.length}/600) — shown in the contents</span>
+                  Excerpt <span className="font-normal normal-case text-slate-500">({draft.excerpt.length}/600). Shown in the contents.</span>
                 </label>
                 <input id="w-excerpt" className="input" maxLength={600} value={draft.excerpt} onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })} />
               </div>
             </div>
             <label className="flex items-center gap-2 text-sm text-slate-300">
               <input type="checkbox" className="accent-gold-400" checked={draft.featured} onChange={(e) => setDraft({ ...draft, featured: e.target.checked })} />
-              Lead essay — shown on the cover of the issue (replaces the current lead)
+              Lead essay. Shown on the cover of the issue, and it replaces the current lead.
             </label>
 
             <div>
@@ -411,7 +411,7 @@ export default function WeeklyAdmin() {
                 />
               )}
               <p className="mt-1 text-[12px] text-slate-500">
-                Markdown only — raw HTML is not rendered on the public site. {draft.body.length.toLocaleString()} characters.
+                Markdown only. The public site does not render raw HTML. {draft.body.length.toLocaleString()} characters.
               </p>
             </div>
 

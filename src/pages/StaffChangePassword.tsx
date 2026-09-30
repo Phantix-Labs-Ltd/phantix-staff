@@ -146,7 +146,7 @@ export default function StaffChangePassword() {
 
           <button type="submit" disabled={busy} className="btn-primary w-full">
             {busy ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-            {forced ? "Set password & continue" : "Update password"}
+            {forced ? "Set password and continue" : "Update password"}
           </button>
         </form>
       </motion.div>

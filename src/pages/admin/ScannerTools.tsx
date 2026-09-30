@@ -21,7 +21,7 @@ const demoTools: ScannerTool[] = [
   { tool_key: "nuclei", name: "Template vulns", purpose: "vuln", docker_image: "projectdiscovery/nuclei:latest", host_binary: null, available: true, docker_available: true, version: "v3.2.0", update_action: "docker pull projectdiscovery/nuclei:latest" },
   { tool_key: "nmap", name: "Port scan", purpose: "network", docker_image: "instrumentisto/nmap:latest", host_binary: "/usr/bin/nmap", available: true, docker_available: true, version: "7.95", update_action: "docker pull instrumentisto/nmap:latest" },
   { tool_key: "httpx", name: "HTTP probe + tech", purpose: "probe", docker_image: "projectdiscovery/httpx:latest", host_binary: "/usr/local/bin/httpx", available: true, docker_available: true, version: "v1.3.7", update_action: "docker pull projectdiscovery/httpx:latest" },
-  { tool_key: "searchsploit", name: "Exploit-DB search", purpose: "exploit", docker_image: null, host_binary: "/usr/local/bin/searchsploit", available: true, docker_available: false, version: null, update_action: "git pull / package update" },
+  { tool_key: "searchsploit", name: "Exploit-DB search", purpose: "exploit", docker_image: null, host_binary: "/usr/local/bin/searchsploit", available: true, docker_available: false, version: null, update_action: "git pull or package update" },
   { tool_key: "sqlmap", name: "SQL injection", purpose: "exploit", docker_image: null, host_binary: null, available: false, docker_available: false, version: null, update_action: "pip install sqlmap" },
 ];
 

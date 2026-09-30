@@ -34,20 +34,20 @@ function overallCopy(status: string): { headline: string; tone: string; icon: Re
   }
   if (status === "degraded") {
     return {
-      headline: "Degraded — a non-critical service needs attention",
+      headline: "Degraded. A non-critical service needs attention.",
       tone: "border-severity-medium/30 bg-severity-medium/10 text-severity-medium",
       icon: <AlertTriangle size={18} />,
     };
   }
   if (status === "error") {
     return {
-      headline: "Down — a required service is not responding",
+      headline: "Down. A required service is not responding.",
       tone: "border-severity-critical/30 bg-severity-critical/10 text-severity-critical",
       icon: <AlertTriangle size={18} />,
     };
   }
   return {
-    headline: "Unknown — no health report yet",
+    headline: "Unknown. No health report yet.",
     tone: "border-slate-500/30 bg-slate-500/10 text-slate-300",
     icon: <HelpCircle size={18} />,
   };
@@ -106,7 +106,7 @@ export default function ServicesHealth() {
 
   const agi = (data.checks?.agi_runner || {}) as HealthCheck;
   const sandboxPresent = agi.sandbox_image_present === true;
-  const sandboxImage = typeof agi.default_image === "string" ? agi.default_image : "—";
+  const sandboxImage = typeof agi.default_image === "string" ? agi.default_image : "Not set";
   const dockerOk = agi.docker === true;
   const deepseekOk = agi.deepseek_configured === true;
   const sessions = typeof agi.sessions === "number" ? agi.sessions : null;
@@ -146,7 +146,7 @@ export default function ServicesHealth() {
     <div>
       <PageHeader
         title="Service Health"
-        description="One row per deployable service — API, each worker queue set, beat, the alert daemon and the pentest runner — so a queue nobody drains cannot hide behind a healthy total."
+        description="One row per deployable service: API, each worker queue set, beat, the alert daemon and the pentest runner. A queue that nobody drains cannot hide behind a healthy total."
         actions={
           <>
             <button
@@ -255,7 +255,7 @@ export default function ServicesHealth() {
           <Card className="mt-4">
             <CardHeader
               title="Pentest sandbox"
-              subtitle="The runner executes every tool inside this image — if it is missing, no container can spawn."
+              subtitle="The runner executes every tool inside this image. If the image is missing, no container can start."
               action={
                 <button onClick={handleReprobe} disabled={reprobing} className="btn-ghost text-xs px-2.5 py-1.5 disabled:opacity-60">
                   <RefreshCw size={12} className={cx(reprobing && "animate-spin")} />
@@ -279,7 +279,7 @@ export default function ServicesHealth() {
               />
               <SandboxFact
                 label="Sessions"
-                value={sessions === null ? "—" : String(sessions)}
+                value={sessions === null ? "Not set" : String(sessions)}
                 icon={<Activity size={16} />}
               />
             </div>
@@ -321,9 +321,9 @@ export default function ServicesHealth() {
                       <td className="px-3 py-2">
                         <StatusBadge status={c.status} />
                       </td>
-                      <td className="px-3 py-2 text-xs text-slate-400">{c.detail || "—"}</td>
+                      <td className="px-3 py-2 text-xs text-slate-400">{c.detail || "Not set"}</td>
                       <td className="px-3 py-2 text-right font-mono text-xs text-slate-500">
-                        {typeof c.latency_ms === "number" ? `${Math.round(c.latency_ms)} ms` : "—"}
+                        {typeof c.latency_ms === "number" ? `${Math.round(c.latency_ms)} ms` : "Not set"}
                       </td>
                     </tr>
                   ))}

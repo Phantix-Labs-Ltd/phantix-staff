@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
@@ -7,6 +7,7 @@ import {
   Zap, Globe, AlertTriangle, ScanLine, BarChart3, RefreshCw,
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
   ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronDown, MoreHorizontal, Newspaper,
+  BellRing,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { APP_URL } from "@/lib/links";
@@ -14,6 +15,7 @@ import { cx } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AGI_ENABLED } from "@/lib/api";
 import { BrandWordmark } from "@/components/BrandLogo";
+import CommandPalette, { type PaletteItem } from "@/components/CommandPalette";
 
 type NavLeafItem = {
   to: string;
@@ -133,8 +135,10 @@ const navSections: {
     label: "Operations",
     role: "superadmin",
     items: [
+      { to: "/overwatch", label: "Overwatch", icon: <Radar size={18} />, superadminOnly: true },
       { to: "/super-logs", label: "Centralized Logs", icon: <FileText size={18} />, superadminOnly: true },
       { to: "/billing", label: "Billing", icon: <BarChart3 size={18} />, superadminOnly: true },
+      { to: "/internal-alerts", label: "Internal Alerts", icon: <BellRing size={18} />, superadminOnly: true },
       { type: "dropdown", label: "More Operations", icon: <MoreHorizontal size={18} />, items: moreOperationsSubItems },
     ],
   },
@@ -253,6 +257,57 @@ export default function Layout() {
   const { session, logout, isAdmin, isSuperadmin, isAgiAdmin, isContributor } = useStore();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent);
+  const shortcutLabel = isMac ? "⌘K" : "Ctrl K";
+
+  // Ctrl/⌘+K anywhere opens the palette — the nav is too deep to hunt through.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // The same role-filtered nav the sidebar renders, flattened for search — so
+  // the palette can never offer a page this operator cannot open.
+  const paletteIndex = useMemo<PaletteItem[]>(() => {
+    const roles = { isAdmin, isSuperadmin, isContributor, isAgiAdmin };
+    const out: PaletteItem[] = [];
+    for (const section of navSections) {
+      if (section.role === "admin" && !isAdmin) continue;
+      if (section.role === "superadmin" && !isSuperadmin) continue;
+      if (section.role === "contributor" && !isContributor) continue;
+      for (const item of visibleNavEntries(section.items, roles)) {
+        if ("type" in item && item.type === "dropdown") {
+          for (const sub of item.items) {
+            out.push({ to: sub.to, label: sub.label, icon: sub.icon, section: section.label, external: sub.external, sameTab: sub.sameTab });
+          }
+        } else {
+          const leaf = item as NavLeafItem;
+          out.push({ to: leaf.to, label: leaf.label, icon: leaf.icon, section: section.label, external: leaf.external, sameTab: leaf.sameTab });
+        }
+      }
+    }
+    out.push({ to: APP_URL, label: "Launch app", icon: <Globe size={18} />, section: "Shortcuts", external: true });
+    return out;
+  }, [isAdmin, isSuperadmin, isContributor, isAgiAdmin]);
+
+  const openPaletteItem = (item: PaletteItem) => {
+    if (item.external) {
+      window.open(item.to, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (item.sameTab) {
+      window.location.assign(item.to);
+      return;
+    }
+    navigate(item.to);
+  };
   // The app-wide <MotionConfig reducedMotion="user"> (main.tsx) already zeroes
   // out framer-motion's height/opacity tweens for prefers-reduced-motion users;
   // this is a belt-and-suspenders guard so the mobile menu is explicitly (not
@@ -334,6 +389,19 @@ export default function Layout() {
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            className="ml-2 hidden items-center gap-2 rounded-lg border border-phantix-700/60 bg-phantix-900/60 px-3 py-2 text-sm text-slate-400 transition-colors hover:border-phantix-600 hover:text-slate-200 sm:flex"
+            aria-label="Search the staff console"
+          >
+            <Search size={15} />
+            <span>Search…</span>
+            <kbd className="ml-1 rounded border border-phantix-600/60 bg-phantix-850 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-slate-500">
+              {shortcutLabel}
+            </kbd>
+          </button>
+
           <div className="min-w-0 flex-1" />
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -402,6 +470,13 @@ export default function Layout() {
           <span className="font-mono">API v1 · staff-only</span>
         </footer>
       </div>
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        items={paletteIndex}
+        onNavigate={openPaletteItem}
+      />
     </div>
   );
 }

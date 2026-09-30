@@ -516,7 +516,7 @@ export function ErrorState({
       </div>
       <h3 className="font-display text-base font-semibold text-slate-200">{title ?? "Server not responding"}</h3>
       <p className="mt-1.5 max-w-md text-sm leading-6 text-slate-400">
-        {body ?? "We could not reach the SecureGraph API. Check your connection and retry — your session stays signed in."}
+        {body ?? "We could not reach the SecureGraph API. Check your connection and try again. Your session stays signed in."}
       </p>
       {onRetry && (
         <button onClick={onRetry} className="btn-primary mt-5 !py-2 text-xs">

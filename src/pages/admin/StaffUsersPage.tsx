@@ -40,7 +40,7 @@ export default function StaffUsers() {
     try {
       const res = await api.post<{ email_sent?: boolean; email_error?: string | null }>("/staff", newStaff);
       if (res?.email_sent === false) {
-        toast("warning", "Staff created — email not sent", res.email_error || "Check SMTP configuration.");
+        toast("warning", "Staff created. Email not sent.", res.email_error || "Check SMTP configuration.");
       } else {
         toast("success", "Staff created", `Temporary password emailed to ${newStaff.email}`);
       }

@@ -123,7 +123,7 @@ export default function ContributeSkills() {
                     {s.title || s.name || s.skill_id || `Skill #${s.id}`}
                   </p>
                   <p className="font-mono text-[12px] text-slate-500">
-                    {s.skill_id}{s.version ? `@${s.version}` : ""} · {s.kind || "skill"} · {s.source || "—"}
+                    {s.skill_id}{s.version ? `@${s.version}` : ""} · {s.kind || "skill"} · {s.source || "Not set"}
                     {typeof s.score === "number" ? ` · score ${s.score.toFixed(2)}` : ""}
                   </p>
                 </div>

@@ -78,7 +78,7 @@ export function normalizeDemoRequest(raw: any): DemoRequest {
     name: str(r.name),
     email: str(r.email),
     company: str(r.company),
-    team_size: str(r.team_size, "—"),
+    team_size: str(r.team_size, "Not set"),
     phone: nullableStr(r.phone),
     message: nullableStr(r.message),
     source: str(r.source, "unknown"),

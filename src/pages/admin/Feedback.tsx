@@ -144,7 +144,7 @@ export default function Feedback() {
     <div>
       <PageHeader
         title="Feedback"
-        description="Bugs, failures and feature requests reported from every backend service — triaged in one place."
+        description="Bugs, failures and feature requests from every backend service, triaged in one place."
         actions={
           <button onClick={() => void load()} className="btn-ghost px-3 py-1.5 text-sm" title="Refresh">
             <RefreshCw size={14} className={cx(loading && "animate-spin")} />
@@ -267,7 +267,7 @@ export default function Feedback() {
               title={activeFilters ? "No feedback matches these filters" : "No feedback yet"}
               body={
                 activeFilters
-                  ? "Try widening the filters — reports arrive from every service as they happen."
+                  ? "Try wider filters. Reports arrive from every service as they happen."
                   : "When a service fails or an operator asks for something missing, it lands here."
               }
             />
@@ -307,7 +307,7 @@ export default function Feedback() {
                     </td>
                     <td className="td whitespace-nowrap text-[13px] text-slate-400">
                       {r.submitter_role && <span className="mr-1.5 text-slate-500 capitalize">{r.submitter_role}</span>}
-                      {r.submitted_by || "—"}
+                      {r.submitted_by || "Not set"}
                       {r.organization_name && <span className="ml-1.5 text-slate-500">· {r.organization_name}</span>}
                     </td>
                     <td className="td"><StatusPill status={r.status} /></td>
@@ -437,7 +437,7 @@ function FeedbackDetail({
             {item.submitted_by || "Anonymous"}
             {item.submitter_role ? ` (${item.submitter_role})` : ""}
           </Meta>
-          <Meta label="Organisation">{item.organization_name || "—"}</Meta>
+          <Meta label="Organisation">{item.organization_name || "Not set"}</Meta>
           <Meta label="First seen">{formatDateTime(item.created_at)}</Meta>
           <Meta label="Last updated">{formatDateTime(item.updated_at)}</Meta>
         </div>
@@ -507,7 +507,7 @@ function FeedbackDetail({
               onChange={(e) => setResolutionNote(e.target.value)}
               rows={2}
               className="input mt-1 !py-1.5 !text-xs"
-              placeholder="What shipped / why it will not be fixed."
+              placeholder="What shipped and why it will not be fixed."
             />
           </label>
           <div className="mt-3 flex justify-end">

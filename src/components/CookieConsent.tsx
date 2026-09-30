@@ -28,7 +28,7 @@ export default function CookieConsent() {
         <div className="flex items-start gap-2.5 sm:contents">
           <Cookie size={16} className="mt-0.5 shrink-0 text-gold-300 sm:mt-0" />
           <p className="min-w-0 flex-1 text-xs leading-5 text-slate-300">
-            We use <strong className="text-slate-200">first-party analytics</strong> on the staff portal — page
+            We use <strong className="text-slate-200">first-party analytics</strong> on the staff portal. It records page
             path, referrer and coarse device info, with no cookies, no fingerprints and no personal data. Read
             our{" "}
             <Link to={COOKIE_POLICY_PATH} className="text-gold-300 underline hover:text-gold-200">

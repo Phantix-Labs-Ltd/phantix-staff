@@ -25,7 +25,7 @@ const EXAMPLES = [
   "Enumerate subdomains and DNS of the allowlisted hosts",
   "Dynamic mobile APK Frida analysis",
   "Triage SOC detections and correlate alerts",
-  "Find IDOR / broken access control on the API",
+  "Find IDOR or broken access control on the API",
   "Recon the website for exposed secrets and .env files",
 ];
 
@@ -82,7 +82,7 @@ export default function AgiPrompts() {
         {/* ── Left: resolver ─────────────────────────────────────────────── */}
         <div className="min-w-0 space-y-3">
           <Card>
-            <CardHeader title="Resolve an objective" subtitle="Type what a user would ask — see the intent detected, the skill it resolves to, and the prompt that drives execution." />
+            <CardHeader title="Resolve an objective" subtitle="Type what a user would ask. You then see the intent detected, the skill it resolves to, and the prompt that drives execution." />
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -141,7 +141,7 @@ export default function AgiPrompts() {
 
               <Card className="!p-0 overflow-hidden">
                 <div className="px-5 pt-5">
-                  <CardHeader title="System prompt preview" subtitle="What the runner receives — staff only. Users never see this." />
+                  <CardHeader title="System prompt preview" subtitle="What the runner receives. Staff only. Users never see this." />
                 </div>
                 <pre className="max-h-[360px] overflow-y-auto overflow-x-hidden whitespace-pre-wrap break-words bg-phantix-950/70 p-4 font-mono text-[13px] leading-5 text-slate-300">{result.prompt}</pre>
               </Card>
@@ -180,10 +180,10 @@ export default function AgiPrompts() {
 
       {/* Prompt library — below resolve objective (full width) */}
       <Card>
-        <CardHeader title="Prompt library" subtitle="Prompts a user's objective can resolve to." action={<button onClick={() => { setDraft({ key: "", label: "", system_prompt: "", user_template: "", intents: [], skill_ids: [], is_active: true }); setEditing({ key: "", label: "", system_prompt: "", user_template: "", intents: [], skill_ids: [], is_active: true }); }} className="btn-primary !px-2.5 !py-1 !text-[13px]"><Plus size={12} className="mr-1 inline" /> Add</button>} />
+        <CardHeader title="Prompt library" subtitle="Prompts that the objective of a user can resolve to." action={<button onClick={() => { setDraft({ key: "", label: "", system_prompt: "", user_template: "", intents: [], skill_ids: [], is_active: true }); setEditing({ key: "", label: "", system_prompt: "", user_template: "", intents: [], skill_ids: [], is_active: true }); }} className="btn-primary !px-2.5 !py-1 !text-[13px]"><Plus size={12} className="mr-1 inline" /> Add</button>} />
         {editing && (
           <div className="mb-3 space-y-2 rounded-lg border border-phantix-700/40 bg-phantix-950/50 p-3">
-            <input value={draft?.label ?? ""} onChange={(e) => setDraft({ ...draft!, label: e.target.value })} placeholder="Label (e.g. VAPT — web application)" className="w-full rounded-md border border-phantix-700/50 bg-phantix-950/70 px-2 py-1.5 text-xs text-slate-200 outline-none" />
+            <input value={draft?.label ?? ""} onChange={(e) => setDraft({ ...draft!, label: e.target.value })} placeholder="Label, for example VAPT web application" className="w-full rounded-md border border-phantix-700/50 bg-phantix-950/70 px-2 py-1.5 text-xs text-slate-200 outline-none" />
             <input value={draft?.key ?? ""} onChange={(e) => setDraft({ ...draft!, key: e.target.value })} placeholder="key (e.g. vapt_web)" className="w-full rounded-md border border-phantix-700/50 bg-phantix-950/70 px-2 py-1.5 font-mono text-xs text-slate-200 outline-none" />
             <textarea
               value={draft?.system_prompt ?? ""}
@@ -195,7 +195,7 @@ export default function AgiPrompts() {
                 el.style.height = `${newH}px`;
               }}
               rows={3}
-              placeholder="System prompt — guides execution"
+              placeholder="System prompt that guides execution"
               className="w-full resize-none rounded-md border border-phantix-700/50 bg-phantix-950/70 px-2 py-1.5 font-mono text-[13px] text-slate-200 outline-none overflow-hidden"
               style={{ minHeight: "60px", maxHeight: "120px" }}
             />

@@ -70,7 +70,7 @@ export default function ContributeHome() {
     <div>
       <PageHeader
         title="Contribute"
-        description="Start here — Atlas, handbook, skills, finding YAMLs, and engine learning without hunting admin menus."
+        description="Start here: Atlas, handbook, skills, finding YAMLs and engine learning, without a search through the admin menus."
         actions={
           <button type="button" onClick={() => void load()} className="btn-ghost text-xs !py-2" title="Refresh">
             {loading ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
@@ -123,7 +123,7 @@ export default function ContributeHome() {
         <Card>
           <CardHeader title="Engine learning" subtitle="Top scored engines" />
           {!data?.engine_learning_top?.length ? (
-            <p className="text-xs text-slate-500">No learning scores yet — sessions will populate this as engines improve.</p>
+            <p className="text-xs text-slate-500">No learning scores yet. Sessions populate this as the engines improve.</p>
           ) : (
             <ul className="space-y-2">
               {data.engine_learning_top.map((e, i) => (
@@ -131,9 +131,9 @@ export default function ContributeHome() {
                   key={`${e.engine_id}-${i}`}
                   className="flex items-center justify-between rounded-md border border-phantix-700/40 px-3 py-2 text-sm"
                 >
-                  <span className="font-mono text-slate-200">{e.engine_id ?? "—"}</span>
+                  <span className="font-mono text-slate-200">{e.engine_id ?? "Not set"}</span>
                   <span className="chip text-xs border-emerald-400/30 bg-emerald-400/10 text-emerald-300">
-                    {typeof e.score === "number" ? e.score.toFixed(2) : "—"}
+                    {typeof e.score === "number" ? e.score.toFixed(2) : "Not set"}
                   </span>
                 </li>
               ))}

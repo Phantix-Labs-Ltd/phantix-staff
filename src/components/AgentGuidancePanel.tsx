@@ -19,7 +19,7 @@ const FLOW_PLACEHOLDER = `{
 
 const RULES_PLACEHOLDER = `[
   { "id": "no_placeholder", "name": "No placeholder findings",
-    "when": "value looks like EXAMPLE / CHANGEME / test",
+    "when": "value looks like EXAMPLE or CHANGEME or test",
     "severity": "info", "note": "do not report" },
   { "id": "confirm_impact", "name": "Confirm real impact",
     "when": "a secret or auth bypass is suspected",
@@ -120,7 +120,7 @@ export function AgentGuidancePanel({ orgs }: { orgs: { id: number; name: string 
             <Sparkles size={14} className="text-gold-300" /> Agent guidance
           </h3>
           <p className="mt-1 max-w-2xl text-[13px] leading-5 text-slate-400">
-            Seed what the pentest agent follows for one organization — no code change. The prompt is
+            Seed what the pentest agent follows for one organization, with no code change. The prompt is
             added to its system prompt as operator guidance, process flows override the built-in
             per-asset-type flow, and detection rules tell it what to flag and how to classify.
           </p>
@@ -162,7 +162,7 @@ export function AgentGuidancePanel({ orgs }: { orgs: { id: number; name: string 
               value={promptMd}
               onChange={(e) => setPromptMd(e.target.value)}
               rows={4}
-              placeholder="Confirm real impact before reporting. Prefer live evidence over heuristics…"
+              placeholder="Confirm the real impact before you report. Prefer live evidence over heuristics…"
               className="input mt-1 font-mono !text-xs leading-5"
             />
           </div>

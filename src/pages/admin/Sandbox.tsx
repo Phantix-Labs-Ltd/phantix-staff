@@ -414,7 +414,7 @@ export default function SandboxAdmin() {
             <Card className="!p-4">
               <p className="text-[13px] uppercase tracking-wider text-slate-500">Avg score</p>
               <p className="mt-1 font-display text-xl font-bold text-gold-300">
-                {board.averageScore != null && !Number.isNaN(board.averageScore) ? board.averageScore.toFixed(1) : "—"}
+                {board.averageScore != null && !Number.isNaN(board.averageScore) ? board.averageScore.toFixed(1) : "Not set"}
               </p>
             </Card>
             <Card className="!p-4">
@@ -485,13 +485,13 @@ export default function SandboxAdmin() {
                           <td className="td text-xs text-slate-400">
                             {m.lastRating ? (
                               <>
-                                {m.lastRating.score}/5 · {m.lastRating.area ?? "—"}
+                                {m.lastRating.score}/5 · {m.lastRating.area ?? "Not set"}
                               </>
                             ) : (
-                              "—"
+                              "Not set"
                             )}
                           </td>
-                          <td className="td text-xs text-slate-400">{m.contactEmail ?? "—"}</td>
+                          <td className="td text-xs text-slate-400">{m.contactEmail ?? "Not set"}</td>
                           <td className="td">
                             <select
                               className="input !w-auto !py-1 text-xs"
@@ -524,7 +524,7 @@ export default function SandboxAdmin() {
                       <span className="text-sm font-medium text-slate-200">{u.title}</span>
                     </div>
                     <p className="mt-1 text-[13px] text-slate-500">
-                      {u.version_label ?? u.versionLabel ?? "—"} ·{" "}
+                      {u.version_label ?? u.versionLabel ?? "Not set"} ·{" "}
                       {timeAgo(String(u.published_at ?? u.publishedAt ?? ""))}
                     </p>
                   </div>
@@ -595,7 +595,7 @@ export default function SandboxAdmin() {
               <option value="">Select…</option>
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
-                  #{c.id} — {c.name}
+                  #{c.id}: {c.name}
                 </option>
               ))}
             </select>

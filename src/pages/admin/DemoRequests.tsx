@@ -10,7 +10,7 @@ export default function DemoRequests() {
     <div>
       <PageHeader
         title="Demo Requests"
-        description="Lead queue from the marketing site — attribution source/path/UTM intact"
+        description="Lead queue from the marketing site. Attribution source, path and UTM are intact."
         actions={<span className="chip border-phantix-600/50 bg-phantix-800/60 text-slate-300"><Inbox size={11} className="mr-1 inline" /> new → contacted → converted → closed</span>}
       />
       <DemoRequestsPanel />

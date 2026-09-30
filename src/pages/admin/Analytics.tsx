@@ -145,7 +145,7 @@ export default function Analytics() {
     <div>
       <PageHeader
         title="Analytics"
-        description="Product usage across the Phantix Labs platform — tenants, users, lead flow, support load and AI credit burn — aggregated on demand from the platform database."
+        description="Product usage across the Phantix Labs platform: tenants, users, lead flow, support load and AI credit burn. Aggregated on demand from the platform database."
         actions={tab !== "product" ? null : (
           <div className="flex items-center gap-2">
             <div className="flex overflow-hidden rounded-md border border-phantix-700/50">
@@ -313,7 +313,7 @@ export default function Analytics() {
             </Card>
 
             <Card>
-              <CardHeader title="Growth & AI usage" subtitle="Coupon redemptions and credit burn" action={<Sparkles size={15} className="text-gold-400" />} />
+              <CardHeader title="Growth and AI usage" subtitle="Coupon redemptions and credit burn" action={<Sparkles size={15} className="text-gold-400" />} />
               <Rows
                 rows={[
                   { label: "Coupons redeemed", value: n(data?.growth.coupons_redeemed) },
@@ -326,7 +326,7 @@ export default function Analytics() {
 
           <p className="flex items-center gap-2 text-[13px] text-slate-600">
             <Ticket size={11} />
-            Aggregated live from the platform database — no warehouse, no third-party trackers, no PII beyond counts.
+            Aggregated live from the platform database. No warehouse, no third-party trackers, and no personal data beyond counts.
             {data?.generated_at && <span>· generated {formatDateTime(data.generated_at)}</span>}
           </p>
         </div>

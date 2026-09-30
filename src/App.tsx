@@ -29,6 +29,7 @@ import VaptAdmin from "@/pages/admin/VaptAdmin";
 import BusDiagnostics from "@/pages/admin/BusDiagnostics";
 import SuperLogs from "@/pages/admin/SuperLogs";
 import EngineJobs from "@/pages/admin/EngineJobs";
+import Overwatch from "@/pages/admin/Overwatch";
 import SuperadminTerminal from "@/pages/admin/Terminal";
 import AgiAdmin from "@/pages/admin/AgiAdmin";
 import SandboxAdmin from "@/pages/admin/Sandbox";
@@ -40,6 +41,7 @@ import SocProvisioning from "@/pages/admin/SocProvisioning";
 import EmailTemplates from "@/pages/admin/EmailTemplates";
 import LegalDocuments from "@/pages/admin/LegalDocuments";
 import WeeklyAdmin from "@/pages/admin/Weekly";
+import InternalAlerts from "@/pages/admin/InternalAlerts";
 import ContributeHome from "@/pages/contribute/ContributeHome";
 import ContributeKnowledge from "@/pages/contribute/ContributeKnowledge";
 import ContributeCapabilities from "@/pages/contribute/ContributeCapabilities";
@@ -163,9 +165,11 @@ export default function App() {
             {/* Superadmin */}
             <Route path="/super-logs" element={<RequireSuperadmin><SuperLogs /></RequireSuperadmin>} />
             <Route path="/engine-jobs" element={<RequireSuperadmin><EngineJobs /></RequireSuperadmin>} />
+            <Route path="/overwatch" element={<RequireSuperadmin><Overwatch /></RequireSuperadmin>} />
             <Route path="/terminal" element={<RequireSuperadmin><SuperadminTerminal /></RequireSuperadmin>} />
             <Route path="/billing" element={<RequireSuperadmin><BillingAdmin /></RequireSuperadmin>} />
             <Route path="/staff" element={<RequireSuperadmin><StaffUsers /></RequireSuperadmin>} />
+            <Route path="/internal-alerts" element={<RequireSuperadmin><InternalAlerts /></RequireSuperadmin>} />
 
             {/* Default redirects */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

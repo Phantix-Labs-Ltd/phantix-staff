@@ -44,7 +44,7 @@ export default function Dashboard() {
     <div>
       <PageHeader
         title="Staff Dashboard"
-        description={isAdmin ? "Platform operations overview — clients, connections, support" : "Support operations overview"}
+        description={isAdmin ? "Platform operations overview: clients, connections and support" : "Support operations overview"}
       />
 
       {stats.loading ? (
@@ -217,7 +217,7 @@ function AuditChainCard() {
             <div>
               <p className="font-display text-base font-bold text-severity-critical">Audit chain BROKEN</p>
               <p className="mt-1 max-w-xl text-sm leading-6 text-slate-300">
-                The audit trail failed hash-chain verification. Treat this as a security incident — do not continue
+                The audit trail failed hash-chain verification. Treat this as a security incident. Do not continue
                 writing audit entries until it is investigated.
               </p>
               {firstBad != null && (
@@ -226,9 +226,9 @@ function AuditChainCard() {
               {reason != null && (
                 <p className="mt-1 max-w-xl text-xs text-slate-400">
                   {reason === "link"
-                    ? "reason: linkage fork — the event is self-consistent but chains to a different predecessor than the row before it (typically concurrent writes)."
+                    ? "reason: linkage fork. The event is self-consistent, but it chains to a different predecessor than the row before it (typically concurrent writes)."
                     : reason === "content"
-                      ? "reason: content mismatch — the event's stored fields no longer match its hash (possible tampering)."
+                      ? "reason: content mismatch. The stored fields of the event no longer match its hash, which can indicate tampering."
                       : `reason: ${String(reason)}`}
                 </p>
               )}

@@ -354,7 +354,7 @@ export default function VaptAdmin() {
                   <div className="flex items-center gap-3">
                     <div>
                       <p className="text-sm font-medium text-slate-100">{s.name}</p>
-                      <p className="text-xs text-slate-500">{s.procedure_key} • {s.cron} • Next: {s.next_run ? formatDateTime(s.next_run) : "—"}</p>
+                      <p className="text-xs text-slate-500">{s.procedure_key} • {s.cron} • Next: {s.next_run ? formatDateTime(s.next_run) : "Not set"}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

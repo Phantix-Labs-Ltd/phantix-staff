@@ -49,12 +49,12 @@ const QUICK_RANGES: Array<[string, number | null]> = [
 ];
 
 const LOG_TYPE_LABELS: Record<string, string> = {
-  api: "Engine / API integration error (user-facing message normalized)",
-  scan: "Scanner job / web step",
+  api: "Engine and API integration error, user-facing message normalized",
+  scan: "Scanner job or web step",
   report: "Report generate",
-  auth: "Login / MFA",
+  auth: "Login and MFA",
   session: "Session",
-  http: "Mutation / operate",
+  http: "Mutation and operate",
   dual_control: "Dual-control",
   access: "Named GET access",
   ai: "AI engine",
@@ -292,7 +292,7 @@ export default function DevLogs() {
         <button
           className={cx("flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors", logTypeFilter === "api" ? "border-orange-400/40 bg-orange-400/10 text-orange-300" : "border-phantix-700/50 bg-phantix-950/50 text-slate-400 hover:bg-phantix-800/60")}
           onClick={() => setLogTypeFilter(f => (f === "api" ? "" : "api"))}
-          title="Engine / API integration errors — normalized for users, full route + upstream detail here"
+          title="Engine and API integration errors. These are normalized for users. The full route and upstream detail are here."
         >
           <AlertCircle size={12} /> API errors
         </button>
@@ -304,7 +304,7 @@ export default function DevLogs() {
         <input className="input w-40 py-1.5 text-xs" placeholder="Engine" value={engineFilter} onChange={e => setEngineFilter(e.target.value)} />
         <div className="relative">
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input className="input w-48 py-1.5 pl-8 text-xs" placeholder="Search message / issue" value={q} onChange={e => setQ(e.target.value)} />
+          <input className="input w-48 py-1.5 pl-8 text-xs" placeholder="Search message or issue" value={q} onChange={e => setQ(e.target.value)} />
         </div>
         <div className="flex items-center gap-1.5">
           <input

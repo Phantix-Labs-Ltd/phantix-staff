@@ -141,7 +141,7 @@ export function PrometheusMetrics() {
         <Gauge size={13} className="text-gold-400" />
         <span>Point a Prometheus job at</span>
         <CopyChip value={scrapeUrl} label={scrapeUrl} />
-        <span className="text-slate-500">— the staff bearer token is required, so scrape through an authenticated proxy.</span>
+        <span className="text-slate-500">It requires the staff bearer token, so scrape through an authenticated proxy.</span>
       </div>
 
       {error && (
@@ -153,7 +153,7 @@ export function PrometheusMetrics() {
 
       {!text && !error && (
         <p className="text-xs text-slate-500">
-          Not scraped yet — a scrape is a few hundred KB of text, so this panel loads only on request.
+          Not scraped yet. A scrape is a few hundred KB of text, so this panel loads only on request.
         </p>
       )}
 
@@ -205,7 +205,7 @@ function FamilyRow({ family }: { family: Family }) {
           <div key={`${s.name}${s.labels}${i}`} className="flex items-baseline justify-between gap-3 font-mono text-[13px]">
             <span className="min-w-0 truncate text-slate-400">{s.name}{s.labels}</span>
             <span className={cx("shrink-0 tabular-nums", Number.isFinite(s.value) ? "text-slate-200" : "text-slate-500")}>
-              {Number.isFinite(s.value) ? s.value.toLocaleString(undefined, { maximumFractionDigits: 4 }) : "—"}
+              {Number.isFinite(s.value) ? s.value.toLocaleString(undefined, { maximumFractionDigits: 4 }) : "Not set"}
             </span>
           </div>
         ))}

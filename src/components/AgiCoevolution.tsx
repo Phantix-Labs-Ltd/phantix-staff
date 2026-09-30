@@ -78,7 +78,7 @@ export function AgiSkillPlanBanner({ plan, open, onToggle }: { plan: AgiSkillPla
           ))}
         </div>
       )}
-      {skills.length === 0 && <p className="text-[13px] text-slate-600">No skills auto-matched yet — AGI will general recon and skill_search.</p>}
+      {skills.length === 0 && <p className="text-[13px] text-slate-600">No skills auto-matched. AGI will use general recon and skill_search.</p>}
     </CollapseCard>
   );
 }
@@ -132,7 +132,7 @@ export function SkillPlanSidePanel({ plan, hideTitle = false }: { plan: AgiSkill
           {s.body_loaded ? <span className="text-emerald-400">Full</span> : <span className="text-slate-600">Card</span>}
         </div>
       ))}
-      {(plan.skills ?? []).length === 0 && <p className="text-[12px] text-slate-600">No skills auto-matched — AGI will use general recon and skill_search.</p>}
+      {(plan.skills ?? []).length === 0 && <p className="text-[12px] text-slate-600">No skills auto-matched. AGI will use general recon and skill_search.</p>}
     </div>
   );
 }
@@ -179,7 +179,7 @@ export function EngineLearningPanel({ orgId }: { orgId?: number }) {
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader title="Live engine ops" subtitle="AGI reads org data through SecureGraph engines — never raw databases." />
+        <CardHeader title="Live engine ops" subtitle="AGI reads organization data through SecureGraph engines. It never reads raw databases." />
         {grouped.length === 0 ? (
           <p className="text-xs text-slate-500">No catalog yet.</p>
         ) : (
@@ -204,7 +204,7 @@ export function EngineLearningPanel({ orgId }: { orgId?: number }) {
       <Card>
         <CardHeader title="Capability learning" subtitle={orgId ? `Org #${orgId} ranks (platform fallback below)` : "Platform-wide scores. Every engine call makes that engine smarter."} />
         {ranks.length === 0 ? (
-          <p className="text-xs text-slate-500">No learning data yet — run AGI sessions that use ENGINE_CALL.</p>
+          <p className="text-xs text-slate-500">No learning data yet. Run AGI sessions that use ENGINE_CALL.</p>
         ) : (
           <div className="space-y-2">
             {ranks.map((c) => (
@@ -294,7 +294,7 @@ export function JobCoveragePanel({
     setBusy(true);
     try {
       await confirmAgiJob(sessionId, stop, stop ? "Operator confirmed JOB_DONE" : "Keep open");
-      toast("success", stop ? "Job confirmed — stopping" : "Job confirmed — session stays open");
+      toast("success", stop ? "Job confirmed. Stopping." : "Job confirmed. The session stays open.");
       onRefresh();
     } catch (e) {
       toast("error", "Confirm failed", e instanceof Error ? e.message : "");
@@ -345,8 +345,8 @@ export function JobCoveragePanel({
       </div>
       {pendingConfirm && (
         <div className="mt-2 flex flex-wrap gap-2 rounded-lg border border-gold-400/30 bg-gold-400/10 px-2.5 py-2">
-          <p className="flex-1 text-[13px] text-gold-200">Agent reports job complete — review checklist</p>
-          <button disabled={busy} onClick={() => void confirm(true)} className="btn-primary !px-2 !py-1 !text-[12px]"><CheckCircle2 size={11} className="mr-1 inline" /> Confirm & stop</button>
+          <p className="flex-1 text-[13px] text-gold-200">Agent reports job complete. Review the checklist.</p>
+          <button disabled={busy} onClick={() => void confirm(true)} className="btn-primary !px-2 !py-1 !text-[12px]"><CheckCircle2 size={11} className="mr-1 inline" /> Confirm and stop</button>
           <button disabled={busy} onClick={() => void confirm(false)} className="btn-ghost !px-2 !py-1 !text-[12px]">Keep open</button>
         </div>
       )}
