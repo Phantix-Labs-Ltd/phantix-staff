@@ -29,6 +29,7 @@ import VaptAdmin from "@/pages/admin/VaptAdmin";
 import BusDiagnostics from "@/pages/admin/BusDiagnostics";
 import SuperLogs from "@/pages/admin/SuperLogs";
 import EngineJobs from "@/pages/admin/EngineJobs";
+import Overwatch from "@/pages/admin/Overwatch";
 import SuperadminTerminal from "@/pages/admin/Terminal";
 import AgiAdmin from "@/pages/admin/AgiAdmin";
 import SandboxAdmin from "@/pages/admin/Sandbox";
@@ -164,6 +165,7 @@ export default function App() {
             {/* Superadmin */}
             <Route path="/super-logs" element={<RequireSuperadmin><SuperLogs /></RequireSuperadmin>} />
             <Route path="/engine-jobs" element={<RequireSuperadmin><EngineJobs /></RequireSuperadmin>} />
+            <Route path="/overwatch" element={<RequireSuperadmin><Overwatch /></RequireSuperadmin>} />
             <Route path="/terminal" element={<RequireSuperadmin><SuperadminTerminal /></RequireSuperadmin>} />
             <Route path="/billing" element={<RequireSuperadmin><BillingAdmin /></RequireSuperadmin>} />
             <Route path="/staff" element={<RequireSuperadmin><StaffUsers /></RequireSuperadmin>} />

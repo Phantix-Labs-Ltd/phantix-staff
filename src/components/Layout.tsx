@@ -135,6 +135,7 @@ const navSections: {
     label: "Operations",
     role: "superadmin",
     items: [
+      { to: "/overwatch", label: "Overwatch", icon: <Radar size={18} />, superadminOnly: true },
       { to: "/super-logs", label: "Centralized Logs", icon: <FileText size={18} />, superadminOnly: true },
       { to: "/billing", label: "Billing", icon: <BarChart3 size={18} />, superadminOnly: true },
       { to: "/internal-alerts", label: "Internal Alerts", icon: <BellRing size={18} />, superadminOnly: true },
