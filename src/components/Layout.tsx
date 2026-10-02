@@ -6,7 +6,7 @@ import {
   Users, FileCheck, Wrench, Search, Activity, LogOut, Menu, X,
   Zap, Globe, AlertTriangle, ScanLine, BarChart3, RefreshCw,
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
-  ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronDown, MoreHorizontal, Newspaper,
+  ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronDown, Newspaper,
   BellRing,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
@@ -31,51 +31,21 @@ type NavLeafItem = {
   // needs the staff token). Use instead of `external` for token-bearing pages.
   sameTab?: boolean;
 };
-type NavDropdownItem = {
-  type: "dropdown";
+type Roles = { isAdmin: boolean; isEditor: boolean; isSuperadmin: boolean; isContributor: boolean; isAgiAdmin: boolean };
+
+/** One sidebar group: only its icon and name show until it is opened, then it
+ *  drops down its pages. A group with a single visible page is that page's link. */
+type NavGroupDef = {
   label: string;
   icon: React.ReactNode;
+  role: "all" | "admin" | "superadmin" | "contributor" | "editor";
   items: NavLeafItem[];
 };
-type NavEntry = NavLeafItem | NavDropdownItem;
 
-const moreContributeSubItems: NavLeafItem[] = [
-  { to: "/contribute/knowledge", label: "Knowledge", icon: <BookOpen size={18} />, contributorOnly: true },
-  { to: "/contribute/skills", label: "Skills", icon: <Brain size={18} />, contributorOnly: true },
-  { to: "/contribute/capabilities", label: "YAML packs", icon: <FileCode2 size={18} />, contributorOnly: true },
-  { to: "/contribute/engines", label: "Engines", icon: <Layers size={18} />, contributorOnly: true },
-  { to: "/contribute/learning", label: "Learning inbox", icon: <Inbox size={18} />, contributorOnly: true },
-  { to: "/architecture", label: "Atlas", icon: <Layers size={18} />, contributorOnly: true },
-];
-
-const moreMonitorSubItems: NavLeafItem[] = [
-  { to: "/scanner-tools", label: "Scanner Tools", icon: <ScanLine size={18} /> },
-  { to: "/bus", label: "Event Bus", icon: <Radio size={18} /> },
-  { to: "/demo-requests", label: "Demo Requests", icon: <Inbox size={18} /> },
-  { to: "/api-docs.html", label: "API Reference", icon: <BookOpen size={18} />, external: true, sameTab: true },
-];
-
-const moreCatalogsSubItems: NavLeafItem[] = [
-  { to: "/soc-provisioning", label: "SOC Provisioning", icon: <Shield size={18} /> },
-  { to: "/discovery", label: "Discovery", icon: <Search size={18} /> },
-  { to: "/experience", label: "Experience", icon: <Zap size={18} /> },
-  { to: "/email-templates", label: "Email Templates", icon: <Mail size={18} /> },
-  { to: "/legal-documents", label: "Legal Documents", icon: <ScrollText size={18} /> },
-];
-
-const moreOperationsSubItems: NavLeafItem[] = [
-  { to: "/engine-jobs", label: "Engine Jobs", icon: <Activity size={18} />, superadminOnly: true },
-  { to: "/terminal", label: "Terminal", icon: <TerminalSquare size={18} />, superadminOnly: true },
-  { to: "/staff", label: "Staff Users", icon: <Users size={18} />, superadminOnly: true },
-];
-
-const navSections: {
-  label: string;
-  role: "all" | "admin" | "superadmin" | "contributor" | "editor";
-  items: NavEntry[];
-}[] = [
+const navSections: NavGroupDef[] = [
   {
     label: "Overview",
+    icon: <LayoutDashboard size={18} />,
     role: "all",
     items: [
       { to: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
@@ -87,27 +57,45 @@ const navSections: {
   },
   {
     label: "Contribute",
+    icon: <Sparkles size={18} />,
     role: "contributor",
     items: [
       { to: "/contribute", label: "Workspace", icon: <Sparkles size={18} />, contributorOnly: true },
-      { type: "dropdown", label: "More Contribute", icon: <MoreHorizontal size={18} />, items: moreContributeSubItems },
+      { to: "/contribute/knowledge", label: "Knowledge", icon: <BookOpen size={18} />, contributorOnly: true },
+      { to: "/contribute/skills", label: "Skills", icon: <Brain size={18} />, contributorOnly: true },
+      { to: "/contribute/capabilities", label: "YAML packs", icon: <FileCode2 size={18} />, contributorOnly: true },
+      { to: "/contribute/engines", label: "Engines", icon: <Layers size={18} />, contributorOnly: true },
+      { to: "/contribute/learning", label: "Learning inbox", icon: <Inbox size={18} />, contributorOnly: true },
+      { to: "/architecture", label: "Atlas", icon: <Layers size={18} />, contributorOnly: true },
     ],
   },
   {
-    label: "Monitor",
+    label: "Monitoring",
+    icon: <Activity size={18} />,
     role: "admin",
     items: [
       { to: "/logs", label: "Logs", icon: <FileText size={18} /> },
       { to: "/server", label: "Server", icon: <Server size={18} /> },
       { to: "/services", label: "Services", icon: <Activity size={18} /> },
-      { to: "/feedback", label: "Feedback", icon: <MessageSquareWarning size={18} /> },
+      { to: "/bus", label: "Event Bus", icon: <Radio size={18} /> },
+      { to: "/scanner-tools", label: "Scanner Tools", icon: <ScanLine size={18} /> },
+    ],
+  },
+  {
+    label: "Insights",
+    icon: <BarChart3 size={18} />,
+    role: "admin",
+    items: [
       { to: "/analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
+      { to: "/feedback", label: "Feedback", icon: <MessageSquareWarning size={18} /> },
+      { to: "/demo-requests", label: "Demo Requests", icon: <Inbox size={18} /> },
       { to: "/architecture", label: "Architecture", icon: <Layers size={18} /> },
-      { type: "dropdown", label: "More Monitor", icon: <MoreHorizontal size={18} />, items: moreMonitorSubItems },
+      { to: "/api-docs.html", label: "API Reference", icon: <BookOpen size={18} />, external: true, sameTab: true },
     ],
   },
   {
     label: "Editorial",
+    icon: <Newspaper size={18} />,
     role: "editor",
     items: [
       { to: "/weekly", label: "The Weekly", icon: <Newspaper size={18} /> },
@@ -115,47 +103,47 @@ const navSections: {
   },
   {
     label: "Catalogs",
+    icon: <FileCheck size={18} />,
     role: "admin",
     items: [
       { to: "/compliance", label: "Compliance", icon: <FileCheck size={18} /> },
       { to: "/tooling", label: "Tooling", icon: <Wrench size={18} /> },
-      { type: "dropdown", label: "More Catalogs", icon: <MoreHorizontal size={18} />, items: moreCatalogsSubItems },
+      { to: "/soc-provisioning", label: "SOC Provisioning", icon: <Shield size={18} /> },
+      { to: "/discovery", label: "Discovery", icon: <Search size={18} /> },
+      { to: "/experience", label: "Experience", icon: <Zap size={18} /> },
+      { to: "/email-templates", label: "Email Templates", icon: <Mail size={18} /> },
+      { to: "/legal-documents", label: "Legal Documents", icon: <ScrollText size={18} /> },
     ],
   },
   {
-    label: "Advanced",
+    label: "AI and agents",
+    icon: <Brain size={18} />,
     role: "admin",
     items: [
       { to: "/ai", label: "AI Admin", icon: <Brain size={18} /> },
       { to: "/agent-activity", label: "Agent activity", icon: <Activity size={18} /> },
       { to: "/vapt-admin", label: "VAPT Admin", icon: <Crosshair size={18} /> },
-    ],
-  },
-  {
-    label: "Autonomous Agent",
-    role: "admin",
-    items: [
       { to: "/agi", label: "Agent Management", icon: <Radar size={18} />, agiOnly: true },
     ],
   },
   {
     label: "Operations",
+    icon: <Radar size={18} />,
     role: "superadmin",
     items: [
       { to: "/overwatch", label: "Overwatch", icon: <Radar size={18} />, superadminOnly: true },
       { to: "/super-logs", label: "Centralized Logs", icon: <FileText size={18} />, superadminOnly: true },
       { to: "/billing", label: "Billing", icon: <BarChart3 size={18} />, superadminOnly: true },
       { to: "/internal-alerts", label: "Internal Alerts", icon: <BellRing size={18} />, superadminOnly: true },
-      { type: "dropdown", label: "More Operations", icon: <MoreHorizontal size={18} />, items: moreOperationsSubItems },
+      { to: "/engine-jobs", label: "Engine Jobs", icon: <Activity size={18} />, superadminOnly: true },
+      { to: "/terminal", label: "Terminal", icon: <TerminalSquare size={18} />, superadminOnly: true },
+      { to: "/staff", label: "Staff Users", icon: <Users size={18} />, superadminOnly: true },
     ],
   },
 ];
 
 /** True when at least one role flag on `item` is set and satisfied by the caller's roles. */
-function isItemVisible(
-  item: NavLeafItem,
-  roles: { isAdmin: boolean; isEditor: boolean; isSuperadmin: boolean; isContributor: boolean; isAgiAdmin: boolean },
-): boolean {
+function isItemVisible(item: NavLeafItem, roles: Roles): boolean {
   if (item.superadminOnly && !roles.isSuperadmin) return false;
   if (item.adminOnly && !roles.isAdmin) return false;
   if (item.contributorOnly && !roles.isContributor) return false;
@@ -164,23 +152,35 @@ function isItemVisible(
   return true;
 }
 
-/** Resolve a section's items to what's visible for the caller's roles, folding
- *  each dropdown down to only its visible sub-items (dropping it entirely if
- *  none remain). */
-function visibleNavEntries(
-  items: NavEntry[],
-  roles: { isAdmin: boolean; isEditor: boolean; isSuperadmin: boolean; isContributor: boolean; isAgiAdmin: boolean },
-): NavEntry[] {
-  const out: NavEntry[] = [];
-  for (const item of items) {
-    if ("type" in item && item.type === "dropdown") {
-      const visibleSub = item.items.filter((sub) => isItemVisible(sub, roles));
-      if (visibleSub.length) out.push({ ...item, items: visibleSub });
-    } else if (isItemVisible(item as NavLeafItem, roles)) {
-      out.push(item);
-    }
+/** The groups this caller may see, each cut down to its visible pages (a group
+ *  with none left is dropped). */
+function visibleNavSections(roles: Roles): NavGroupDef[] {
+  const out: NavGroupDef[] = [];
+  for (const section of navSections) {
+    if (section.role === "admin" && !roles.isAdmin) continue;
+    if (section.role === "editor" && !roles.isEditor) continue;
+    if (section.role === "superadmin" && !roles.isSuperadmin) continue;
+    if (section.role === "contributor" && !roles.isContributor) continue;
+    const items = section.items.filter((item) => isItemVisible(item, roles));
+    if (items.length) out.push({ ...section, items });
   }
   return out;
+}
+
+/** The group holding the page at `pathname`: the longest item route that is
+ *  the path itself or a parent of it, so `/contribute/skills` resolves to its
+ *  own entry rather than to `/contribute`. */
+function activeGroupLabel(sections: NavGroupDef[], pathname: string): string | null {
+  let best: { label: string; length: number } | null = null;
+  for (const section of sections) {
+    for (const item of section.items) {
+      const hit = pathname === item.to || pathname.startsWith(`${item.to}/`);
+      if (hit && (!best || item.to.length > best.length)) {
+        best = { label: section.label, length: item.to.length };
+      }
+    }
+  }
+  return best?.label ?? null;
 }
 
 function NavLeafLink({ item, onClick, mobile }: { item: NavLeafItem; onClick?: () => void; mobile?: boolean }) {
@@ -204,7 +204,7 @@ function NavLeafLink({ item, onClick, mobile }: { item: NavLeafItem; onClick?: (
     <NavLink
       key={item.to}
       to={item.to}
-      end={item.to === "/dashboard"}
+      end={item.to === "/dashboard" || item.to === "/contribute"}
       onClick={onClick}
       className={({ isActive }) => cx("nav-item", mobile && "py-2", isActive && "active")}
     >
@@ -215,43 +215,54 @@ function NavLeafLink({ item, onClick, mobile }: { item: NavLeafItem; onClick?: (
 }
 
 /**
- * Collapsible nav group. Opens itself whenever the current route is inside the
- * group, so deep-linking to a sub-page still shows where you are.
+ * One sidebar group. The parent keeps one group open at a time and opens the
+ * group of the current route, so deep-linking still shows where you are.
  */
-function NavDropdown({ label, icon, items, onNavigate, mobile }: NavDropdownItem & { onNavigate?: () => void; mobile?: boolean }) {
-  const location = useLocation();
-  const groupActive = items.some((i) => location.pathname === i.to);
-  const [open, setOpen] = useState(groupActive);
-
-  useEffect(() => {
-    if (groupActive) setOpen(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
-
+function NavGroup({
+  section,
+  open,
+  active,
+  onToggle,
+  onNavigate,
+  mobile,
+}: {
+  section: NavGroupDef;
+  open: boolean;
+  active: boolean;
+  onToggle: () => void;
+  onNavigate?: () => void;
+  mobile?: boolean;
+}) {
+  if (section.items.length === 1) {
+    return <NavLeafLink item={section.items[0]} onClick={onNavigate} mobile={mobile} />;
+  }
+  const listId = `staff-nav-${mobile ? "m-" : ""}${section.label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div>
       <button
-        onClick={() => setOpen((v) => !v)}
-        className={cx("nav-item w-full justify-between", mobile && "py-2", groupActive && "active")}
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={listId}
+        className={cx("nav-item w-full", mobile && "py-2", active && "text-slate-100")}
       >
-        <span className="flex items-center gap-3">
-          {icon}
-          {label}
-        </span>
-        <ChevronDown size={14} className={cx("text-slate-500 transition-transform duration-200", open && "rotate-180")} />
+        {section.icon}
+        {section.label}
+        <ChevronDown size={14} className={cx("ml-auto shrink-0 text-slate-500 transition-transform duration-200", open && "rotate-180")} />
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
+            id={listId}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="ml-7 mt-0.5 space-y-0.5 border-l border-phantix-700/50 pl-2.5">
-              {items.map((sub) => (
-                <NavLeafLink key={sub.to} item={sub} onClick={onNavigate} mobile={mobile} />
+            <div className="ml-[1.1rem] mt-0.5 space-y-0.5 border-l border-phantix-700/50 pl-2">
+              {section.items.map((item) => (
+                <NavLeafLink key={item.to} item={item} onClick={onNavigate} mobile={mobile} />
               ))}
             </div>
           </motion.div>
@@ -281,30 +292,43 @@ export default function Layout() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const location = useLocation();
+  // The role-filtered groups, shared by the sidebar, the mobile menu and search.
+  const sections = useMemo(
+    () => visibleNavSections({ isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin }),
+    [isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin],
+  );
+  // One group open at a time; landing on a page opens the group it lives in.
+  const activeGroup = useMemo(() => activeGroupLabel(sections, location.pathname), [sections, location.pathname]);
+  const [openGroup, setOpenGroup] = useState<string | null>(activeGroup);
+  useEffect(() => {
+    if (activeGroup) setOpenGroup(activeGroup);
+  }, [activeGroup]);
+  const renderNav = (mobile: boolean) =>
+    sections.map((section) => (
+      <NavGroup
+        key={section.label}
+        section={section}
+        open={openGroup === section.label}
+        active={activeGroup === section.label}
+        onToggle={() => setOpenGroup((g) => (g === section.label ? null : section.label))}
+        onNavigate={mobile ? () => setMenuOpen(false) : undefined}
+        mobile={mobile}
+      />
+    ));
+
   // The same role-filtered nav the sidebar renders, flattened for search — so
   // the palette can never offer a page this operator cannot open.
   const paletteIndex = useMemo<PaletteItem[]>(() => {
-    const roles = { isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin };
     const out: PaletteItem[] = [];
-    for (const section of navSections) {
-      if (section.role === "admin" && !isAdmin) continue;
-      if (section.role === "editor" && !isEditor) continue;
-      if (section.role === "superadmin" && !isSuperadmin) continue;
-      if (section.role === "contributor" && !isContributor) continue;
-      for (const item of visibleNavEntries(section.items, roles)) {
-        if ("type" in item && item.type === "dropdown") {
-          for (const sub of item.items) {
-            out.push({ to: sub.to, label: sub.label, icon: sub.icon, section: section.label, external: sub.external, sameTab: sub.sameTab });
-          }
-        } else {
-          const leaf = item as NavLeafItem;
-          out.push({ to: leaf.to, label: leaf.label, icon: leaf.icon, section: section.label, external: leaf.external, sameTab: leaf.sameTab });
-        }
+    for (const section of sections) {
+      for (const item of section.items) {
+        out.push({ to: item.to, label: item.label, icon: item.icon, section: section.label, external: item.external, sameTab: item.sameTab });
       }
     }
     out.push({ to: APP_URL, label: "Launch app", icon: <Globe size={18} />, section: "Shortcuts", external: true });
     return out;
-  }, [isAdmin, isSuperadmin, isContributor, isAgiAdmin]);
+  }, [sections]);
 
   const openPaletteItem = (item: PaletteItem) => {
     if (item.external) {
@@ -346,30 +370,8 @@ export default function Layout() {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-1.5">
-          {navSections.map((section) => {
-            if (section.role === "admin" && !isAdmin) return null;
-            if (section.role === "editor" && !isEditor) return null;
-            if (section.role === "superadmin" && !isSuperadmin) return null;
-            if (section.role === "contributor" && !isContributor) return null;
-            const visibleItems = visibleNavEntries(section.items, { isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin });
-            if (!visibleItems.length) return null;
-
-            return (
-              <div key={section.label}>
-                <p className="nav-section-label">
-                  {section.label}
-                </p>
-                {visibleItems.map((item) => {
-                  if ("type" in item && item.type === "dropdown") {
-                    return <NavDropdown key={item.label} {...item} />;
-                  }
-                  const leaf = item as NavLeafItem;
-                  return <NavLeafLink key={leaf.to} item={leaf} />;
-                })}
-              </div>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-0.5">
+          {renderNav(false)}
 
           {/* Launch app */}
           <div className="px-3">
@@ -442,27 +444,8 @@ export default function Layout() {
             transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-x-0 top-16 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-phantix-700/30 bg-phantix-950/98 shadow-card lg:hidden"
           >
-            <nav className="px-4 py-3 space-y-2">
-              {navSections.map((section) => {
-                if (section.role === "admin" && !isAdmin) return null;
-            if (section.role === "editor" && !isEditor) return null;
-                if (section.role === "superadmin" && !isSuperadmin) return null;
-                if (section.role === "contributor" && !isContributor) return null;
-                const visibleItems = visibleNavEntries(section.items, { isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin });
-                if (!visibleItems.length) return null;
-                return (
-                  <div key={section.label} className="mb-3">
-                    <p className="nav-section-label">{section.label}</p>
-                    {visibleItems.map((item) => {
-                      if ("type" in item && item.type === "dropdown") {
-                        return <NavDropdown key={item.label} {...item} onNavigate={() => setMenuOpen(false)} mobile />;
-                      }
-                      const leaf = item as NavLeafItem;
-                      return <NavLeafLink key={leaf.to} item={leaf} onClick={() => setMenuOpen(false)} mobile />;
-                    })}
-                  </div>
-                );
-              })}
+            <nav className="px-4 py-3 space-y-0.5">
+              {renderNav(true)}
             </nav>
           </motion.div>
         )}
