@@ -286,6 +286,57 @@ export default function Overwatch() {
             </ul>
           </Card>
 
+          {snapshot?.deployment ? (
+            <Card>
+              <CardHeader
+                title="SOC & CI/CD"
+                subtitle="privacy, telemetry, detection, continuous monitoring and pipeline (phases 0–6)"
+              />
+              <ul className="space-y-1 px-3 pb-3 text-xs">
+                <li className="flex justify-between gap-2">
+                  <span className="text-slate-400">raw logs</span>
+                  <span className={snapshot.deployment.logRawDefault ? "text-amber-400" : "text-slate-500"}>
+                    {snapshot.deployment.logRawDefault ? "on by default" : "opt-in (off)"}
+                  </span>
+                </li>
+                <li className="flex justify-between gap-2">
+                  <span className="text-slate-400">log residency</span>
+                  <span className="font-mono text-slate-300">{snapshot.deployment.logResidencyRegion || "—"}</span>
+                </li>
+                <li className="flex justify-between gap-2">
+                  <span className="text-slate-400">retention</span>
+                  <span className="font-mono text-slate-300">
+                    {snapshot.deployment.logEventTtlDays ?? "—"}d events · {snapshot.deployment.logRawTtlDays ?? "—"}d raw
+                  </span>
+                </li>
+                <li className="flex justify-between gap-2">
+                  <span className="text-slate-400">raw bucket</span>
+                  <span className="truncate font-mono text-slate-300">{snapshot.deployment.logBucket || "—"}</span>
+                </li>
+                <li className="flex justify-between gap-2">
+                  <span className="text-slate-400">CI/CD monitoring</span>
+                  <span className={snapshot.deployment.cicdEnabled ? "text-sky-400" : "text-slate-500"}>
+                    {snapshot.deployment.cicdEnabled ? "enabled" : "disabled"}
+                    {snapshot.deployment.cicdDailyScanCap ? ` · ${snapshot.deployment.cicdDailyScanCap}/day` : ""}
+                  </span>
+                </li>
+                <li className="flex justify-between gap-2">
+                  <span className="text-slate-400">detection compiler</span>
+                  <span className="text-slate-300">
+                    {snapshot.deployment.pysigmaInstalled ? "pySigma" : "built-in subset"}
+                  </span>
+                </li>
+                <li className="pt-1 text-slate-500">
+                  providers:{" "}
+                  {Object.entries(snapshot.deployment.cicdProviders)
+                    .filter(([, on]) => on)
+                    .map(([name]) => name)
+                    .join(", ") || "none configured"}
+                </li>
+              </ul>
+            </Card>
+          ) : null}
+
           {snapshot?.notes?.length ? (
             <Card>
               <CardHeader title="Payload notes" subtitle="what the endpoint is telling us about itself" />
