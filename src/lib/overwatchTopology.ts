@@ -115,6 +115,12 @@ export const BOUNDARIES: TopologyBoundary[] = [
     "label": "Targets & tenants",
     "kind": "cloud",
     "note": "What the scanners and agents are pointed at while running"
+  },
+  {
+    "id": "endpoints",
+    "label": "Client endpoints (agent hosts)",
+    "kind": "cloud",
+    "note": "Customer hosts running phantix-heartbeat. Outbound-only: allow-listed API host, no inbound listener, on-host redaction."
   }
 ];
 
@@ -984,6 +990,78 @@ export const UNITS: TopologyUnit[] = [
     "state": "inactive",
     "unverified": true,
     "note": "threat_model_engine embeddings + product_documents.embedding, HNSW. AI_EMBEDDING_ENABLED is not set (default false) and QDRANT_URL is absent. Present in schema, not running. This is why the map is not a RAG pipeline."
+  },
+  {
+    "id": "soc-agent-fleet",
+    "label": "phantix-heartbeat fleet",
+    "kind": "runner",
+    "boundary": "endpoints",
+    "state": "per-client",
+    "note": "Client-host agents (Linux/Windows first; macOS later). One-way egress to the API host only, no inbound port. Modes: heartbeat, logs, fim, process; on-host redaction + HMAC-signed requests."
+  },
+  {
+    "id": "soc-events",
+    "label": "soc event store (server_events)",
+    "kind": "memory-store",
+    "boundary": "core",
+    "parent": "eng-soc",
+    "note": "Minimised events + log_retention_policy in the per-client security DB. Server-side redaction, dedup, TTL purge, delete-by-subject."
+  },
+  {
+    "id": "soc-detections",
+    "label": "Sigma detection packs",
+    "kind": "registry",
+    "boundary": "core",
+    "parent": "eng-soc",
+    "note": "Platform pack (spans clients) + optional per-client vendor packs. Built-in subset compiler; pySigma adapter when installed."
+  },
+  {
+    "id": "soc-alerts",
+    "label": "continuous monitoring & alerts",
+    "kind": "observer",
+    "boundary": "core",
+    "parent": "eng-soc",
+    "note": "security_alerts: dedup, open/ack/escalate/resolve/false-positive, SLA, MTTA/MTTR; securityAlertRaised/Updated realtime."
+  },
+  {
+    "id": "soc-cloud-config",
+    "label": "cloud config monitoring",
+    "kind": "observer",
+    "boundary": "core",
+    "parent": "eng-soc",
+    "note": "cloud_config_snapshots/changes; hourly securegraph.soc.cloud_config_sweep on the continuous queue."
+  },
+  {
+    "id": "soc-log-sink",
+    "label": "log object store (raw, opt-in)",
+    "kind": "object-store",
+    "boundary": "providers",
+    "state": "opt-in",
+    "note": "OBJECT_STORAGE_BUCKET_LOGS=securegraph-logs-ng, LOG_STORAGE_REGION=ng. Written only when a client opts into raw; TTL-bound."
+  },
+  {
+    "id": "pysigma",
+    "label": "pySigma (optional)",
+    "kind": "registry",
+    "boundary": "core",
+    "parent": "eng-soc",
+    "state": "optional",
+    "note": "Optional dependency (requirements-optional.txt). Absent -> built-in subset Sigma compiler is used."
+  },
+  {
+    "id": "cicd-webhooks",
+    "label": "CI/CD provider webhooks",
+    "kind": "gateway",
+    "boundary": "edge",
+    "note": "Public, signature-verified receiver: /api/v1/cicd/webhooks/{provider}[/{connection_id}] for GitHub/GitLab/Gitea/Bitbucket/Azure DevOps/Jenkins/CircleCI."
+  },
+  {
+    "id": "e-cicd",
+    "label": "SCM provider APIs",
+    "kind": "observer",
+    "boundary": "egress",
+    "state": "per-client",
+    "note": "Outbound branch review / config pull to the configured SCM providers; daily scan cap is env-set."
   }
 ];
 
@@ -2193,6 +2271,95 @@ export const EDGES: TopologyEdge[] = [
     "semantics": "gate",
     "p50": 600,
     "label": "typed gate"
+  },
+  {
+    "from": "soc-agent-fleet",
+    "to": "api",
+    "kind": "https",
+    "async": true,
+    "label": "signed minimised events"
+  },
+  {
+    "from": "api",
+    "to": "soc-events",
+    "kind": "inproc",
+    "label": "redact + dedup + retain"
+  },
+  {
+    "from": "api",
+    "to": "soc-log-sink",
+    "kind": "https",
+    "async": true,
+    "label": "raw lines (opt-in)"
+  },
+  {
+    "from": "eng-soc",
+    "to": "soc-detections",
+    "kind": "inproc"
+  },
+  {
+    "from": "soc-detections",
+    "to": "soc-alerts",
+    "kind": "inproc",
+    "label": "match -> alert"
+  },
+  {
+    "from": "soc-events",
+    "to": "soc-alerts",
+    "kind": "inproc"
+  },
+  {
+    "from": "eng-soc",
+    "to": "soc-cloud-config",
+    "kind": "inproc",
+    "async": true,
+    "label": "sweep"
+  },
+  {
+    "from": "soc-cloud-config",
+    "to": "soc-alerts",
+    "kind": "inproc",
+    "label": "config change -> alert"
+  },
+  {
+    "from": "cicd-webhooks",
+    "to": "eng-asset",
+    "kind": "inproc",
+    "label": "verify signature, record event"
+  },
+  {
+    "from": "cicd-webhooks",
+    "to": "q-continuous",
+    "kind": "celery",
+    "async": true,
+    "label": "trigger scan"
+  },
+  {
+    "from": "e-cicd",
+    "to": "cicd-webhooks",
+    "kind": "https",
+    "async": true,
+    "label": "provider callbacks"
+  },
+  {
+    "from": "eng-asset",
+    "to": "e-cicd",
+    "kind": "https",
+    "async": true,
+    "label": "branch review pull"
+  },
+  {
+    "from": "eng-soc",
+    "to": "q-continuous",
+    "kind": "celery",
+    "async": true,
+    "label": "config sweep / retention purge"
+  },
+  {
+    "from": "pysigma",
+    "to": "soc-detections",
+    "kind": "inproc",
+    "label": "compile when present"
   }
 ];
 

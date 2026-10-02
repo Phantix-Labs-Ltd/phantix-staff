@@ -115,28 +115,29 @@ export default function ExperienceAdmin() {
       ) : data.length === 0 ? (
         <EmptyState icon={<Zap size={24} />} title="No services" body="Seed defaults to populate the catalog" action={<button onClick={handleSeed} className="btn-primary">Seed Defaults</button>} />
       ) : (
-        <div className="space-y-3">
+        // One card with a divided row per service, not a card per service.
+        <div className="card overflow-hidden divide-y divide-phantix-700/40">
           {data.sort((a, b) => a.sort_order - b.sort_order).map((svc) => {
             const open = !!expanded[svc.service_key];
             return (
-              <Card key={svc.service_key} className="!p-0 overflow-hidden">
+              <div key={svc.service_key}>
                 {/* Header */}
                 <button
                   onClick={() => toggle(svc.service_key)}
-                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-phantix-800/30 transition-colors text-left"
+                  className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-phantix-800/30 transition-colors text-left"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <Zap size={18} className={svc.is_active ? "text-gold-400" : "text-slate-600"} />
+                    <Zap size={16} className={svc.is_active ? "shrink-0 text-gold-400" : "shrink-0 text-slate-600"} />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-slate-100">{svc.label}</p>
                         {svc.is_active ? (
-                          <span className="chip text-[12px] text-emerald-400 bg-emerald-400/10 border-emerald-400/30"><Eye size={10} /> Active</span>
+                          <span className="chip !py-0 text-[12px] text-emerald-400 bg-emerald-400/10 border-emerald-400/30"><Eye size={10} /> Active</span>
                         ) : (
-                          <span className="chip text-[12px] text-slate-400 bg-slate-400/10 border-slate-500/30"><EyeOff size={10} /> Inactive</span>
+                          <span className="chip !py-0 text-[12px] text-slate-400 bg-slate-400/10 border-slate-500/30"><EyeOff size={10} /> Inactive</span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">{svc.description}</p>
+                      <p className="truncate text-xs text-slate-500">{svc.description}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-3">
@@ -148,7 +149,7 @@ export default function ExperienceAdmin() {
 
                 {/* Expanded detail */}
                 {open && (
-                  <div className="border-t border-phantix-700/40 px-5 py-4 space-y-4 bg-phantix-900/30">
+                  <div className="border-t border-phantix-700/40 px-4 py-3 space-y-3 bg-phantix-900/30">
                     {/* Modules */}
                     {svc.modules.length > 0 && (
                       <div>
@@ -235,7 +236,7 @@ export default function ExperienceAdmin() {
                     </div>
                   </div>
                 )}
-              </Card>
+              </div>
             );
           })}
         </div>

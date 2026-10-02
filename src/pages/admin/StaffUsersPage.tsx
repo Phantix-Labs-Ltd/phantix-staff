@@ -109,6 +109,7 @@ export default function StaffUsers() {
                       <span className={`chip capitalize text-xs ${
                         s.role === "superadmin" ? "text-severity-critical bg-severity-critical/10 border-severity-critical/30"
                         : s.role === "admin" ? "text-severity-high bg-severity-high/10 border-severity-high/30"
+                        : s.role === "editor" ? "text-gold-300 bg-gold-400/10 border-gold-400/30"
                         : "text-severity-low bg-severity-low/10 border-severity-low/30"
                       }`}>
                         {s.role}
@@ -142,6 +143,7 @@ export default function StaffUsers() {
             <label className="label">Role</label>
             <select className="input" value={newStaff.role} onChange={(e) => setNewStaff((s) => ({ ...s, role: e.target.value }))}>
               <option value="support">Support</option>
+              <option value="editor">Editor (Weekly)</option>
               <option value="admin">Admin</option>
               <option value="superadmin">Superadmin</option>
             </select>
@@ -166,7 +168,7 @@ export default function StaffUsers() {
             <div><label className="label">Full Name</label><input className="input" value={staffForm.full_name} onChange={e => setStaffForm(f => ({...f, full_name: e.target.value}))} /></div>
             <div><label className="label">Role</label>
               <select className="input" value={staffForm.role} onChange={e => setStaffForm(f => ({...f, role: e.target.value}))}>
-                <option value="support">Support</option><option value="admin">Admin</option><option value="superadmin">Superadmin</option>
+                <option value="support">Support</option><option value="editor">Editor (Weekly)</option><option value="admin">Admin</option><option value="superadmin">Superadmin</option>
               </select>
             </div>
             <div><label className="label">Status</label>

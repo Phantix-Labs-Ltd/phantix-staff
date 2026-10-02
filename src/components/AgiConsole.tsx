@@ -724,7 +724,7 @@ export default function AgiConsole({
 
           <div className="relative min-h-0 flex-1">
             {lanes ? (
-              <div className="grid h-full grid-cols-3 divide-x divide-phantix-700/30">
+              <div className="grid h-full grid-cols-1 divide-y divide-phantix-700/30 overflow-y-auto md:grid-cols-3 md:divide-x md:divide-y-0 md:overflow-visible">
                 {(["orchestrator", "recon", "exploit"] as AgentPersona[]).map((lane) => (
                   <div key={lane} className="wb-pane wb-scroll min-h-0 space-y-1.5 overflow-y-auto wb-pad">
                     <p className="wb-pane-title sticky top-0 z-10 -mx-1 bg-phantix-950/95 px-1 pb-1.5">

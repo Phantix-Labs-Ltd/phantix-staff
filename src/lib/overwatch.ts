@@ -76,6 +76,20 @@ export interface Snapshot {
   };
   dark: { id: string; kind: string; reason: string }[];
   notes: string[];
+  /** SOC + CI/CD config facts (phases 0–6). Config-read only; no tenant data. */
+  deployment?: {
+    logRawDefault: boolean;
+    logResidencyRegion: string;
+    logEventTtlDays: number | null;
+    logRawTtlDays: number | null;
+    logBucket: string;
+    cicdEnabled: boolean;
+    cicdDailyScanCap: number | null;
+    cicdPushProfile?: string;
+    cicdDeploymentProfile?: string;
+    pysigmaInstalled: boolean;
+    cicdProviders: Record<string, boolean>;
+  };
 }
 
 export async function fetchSnapshot(windowMinutes = 60, seedHours = 24): Promise<Snapshot> {

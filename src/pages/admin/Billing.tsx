@@ -187,26 +187,52 @@ export default function BillingAdmin() {
         <div className="space-y-4">
           {loading ? <TableSkeleton rows={3} /> : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <StatCard label="Free" value={formatTierPrice(billing?.plan_prices_ngn?.free ?? 0)} icon={<DollarSign size={18} />} />
-                <StatCard label="Starter /mo" value={formatTierPrice(billing?.plan_prices_ngn?.starter ?? billing?.monthly_price_ngn)} icon={<DollarSign size={18} />} />
-                <StatCard label="Growth /mo" value={formatTierPrice(billing?.plan_prices_ngn?.growth)} icon={<BarChart3 size={18} />} />
-                <StatCard label="Enterprise" value={formatTierPrice(billing?.plan_prices_ngn?.enterprise)} icon={<DollarSign size={18} />} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <StatCard label="Starter yearly" value={formatNaira(billing?.yearly_price_ngn || 0)} icon={<BarChart3 size={18} />} />
-                <StatCard label="Yearly savings" value={`${yearlySavingsPct}%`} icon={<DollarSign size={18} />} />
-                <StatCard label="1st-month discount" value={`${billing?.first_month_discount_percent ?? pricing?.first_month_discount_percent ?? 50}%`} icon={<CreditCard size={18} />} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <StatCard label="AI Starter (NGN/mo)" value={formatAiNgn(metering?.plan_ai_ngn_mo?.starter)} icon={<CreditCard size={18} />} />
-                <StatCard label="AI Growth (NGN/mo)" value={formatAiNgn(metering?.plan_ai_ngn_mo?.growth)} icon={<CreditCard size={18} />} />
-                <StatCard label="1 AI credit" value={metering ? `₦${metering.credit_ngn}` : "Not set"} icon={<DollarSign size={18} />} />
-              </div>
-              <div className="flex items-center gap-3">
-                <button onClick={openPriceChange} className="btn-secondary text-sm">Change Pricing</button>
-                <button onClick={() => setShowRenewalConfirm(true)} className="btn-secondary text-sm"><RefreshCw size={14} /> Run Renewals</button>
-              </div>
+              {/* Every price in one card: three short lists instead of ten tiles,
+                  with the two actions in the header next to what they change. */}
+              <Card>
+                <CardHeader
+                  title="Price book"
+                  subtitle="Plan, yearly and AI prices in NGN"
+                  action={
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button onClick={openPriceChange} className="btn-secondary !py-1.5 text-sm">Change Pricing</button>
+                      <button onClick={() => setShowRenewalConfirm(true)} className="btn-secondary !py-1.5 text-sm"><RefreshCw size={14} /> Run Renewals</button>
+                    </div>
+                  }
+                />
+                <div className="grid gap-4 md:grid-cols-3">
+                  {([
+                    ["Plans", [
+                      ["Free", formatTierPrice(billing?.plan_prices_ngn?.free ?? 0)],
+                      ["Starter /mo", formatTierPrice(billing?.plan_prices_ngn?.starter ?? billing?.monthly_price_ngn)],
+                      ["Growth /mo", formatTierPrice(billing?.plan_prices_ngn?.growth)],
+                      ["Enterprise", formatTierPrice(billing?.plan_prices_ngn?.enterprise)],
+                    ]],
+                    ["Yearly and offers", [
+                      ["Starter yearly", formatNaira(billing?.yearly_price_ngn || 0)],
+                      ["Yearly savings", `${yearlySavingsPct}%`],
+                      ["1st-month discount", `${billing?.first_month_discount_percent ?? pricing?.first_month_discount_percent ?? 50}%`],
+                    ]],
+                    ["AI", [
+                      ["AI Starter (NGN/mo)", formatAiNgn(metering?.plan_ai_ngn_mo?.starter)],
+                      ["AI Growth (NGN/mo)", formatAiNgn(metering?.plan_ai_ngn_mo?.growth)],
+                      ["1 AI credit", metering ? `₦${metering.credit_ngn}` : "Not set"],
+                    ]],
+                  ] as const).map(([group, rows]) => (
+                    <div key={group}>
+                      <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-slate-500">{group}</p>
+                      <dl className="divide-y divide-phantix-700/40 rounded-md border border-phantix-700/40 bg-phantix-950/40">
+                        {rows.map(([label, value]) => (
+                          <div key={label} className="flex items-center justify-between gap-3 px-3 py-1.5 text-sm">
+                            <dt className="text-slate-400">{label}</dt>
+                            <dd className="font-display font-semibold text-white">{value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  ))}
+                </div>
+              </Card>
               {extraLoading && !metering && <TableSkeleton rows={3} />}
               {metering && (
                 <CollapsibleCard defaultOpen={false} title="AI credit metering" subtitle={`FX ₦${metering.fx?.ngn_per_usd ?? FX_NGN_PER_USD}/USD · ${formatCredits(metering.plan_credits_mo?.starter)} of ${formatCredits(metering.plan_credits_mo?.growth)} credits`}>
@@ -296,7 +322,7 @@ export default function BillingAdmin() {
       {tab === "redemptions" && (
         <div className="space-y-2">
           {extraLoading && redemptions.length === 0 ? <TableSkeleton rows={3} /> : redemptions.length === 0 ? <EmptyState icon={<CheckCircle2 size={24} />} title="No redemptions" body="No organizations have redeemed coupons yet." /> : (
-            <Card className="!p-0 overflow-hidden"><table className="w-full"><thead><tr className="border-b border-phantix-700/40"><th className="th">Code</th><th className="th">Org ID</th><th className="th">Redeemed</th><th className="th">Expires</th><th className="th">Status</th></tr></thead><tbody>{redemptions.map(r => <tr key={r.id} className="border-b border-phantix-800/40"><td className="td font-mono text-xs text-gold-300">{r.code_snapshot}</td><td className="td text-xs">#{r.organization_id}</td><td className="td text-xs text-slate-400">{timeAgo(r.redeemed_at)}</td><td className="td text-xs text-slate-400">{timeAgo(r.access_ends_at)}</td><td className="td"><span className={cx("chip text-[12px]", r.status === "active" ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300" : "border-slate-500/50 bg-slate-500/10 text-slate-500")}>{r.status}</span></td></tr>)}</tbody></table></Card>
+            <Card className="!p-0 overflow-x-auto"><table className="w-full min-w-[640px]"><thead><tr className="border-b border-phantix-700/40"><th className="th">Code</th><th className="th">Org ID</th><th className="th">Redeemed</th><th className="th">Expires</th><th className="th">Status</th></tr></thead><tbody>{redemptions.map(r => <tr key={r.id} className="border-b border-phantix-800/40"><td className="td font-mono text-xs text-gold-300">{r.code_snapshot}</td><td className="td text-xs">#{r.organization_id}</td><td className="td text-xs text-slate-400">{timeAgo(r.redeemed_at)}</td><td className="td text-xs text-slate-400">{timeAgo(r.access_ends_at)}</td><td className="td"><span className={cx("chip text-[12px]", r.status === "active" ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300" : "border-slate-500/50 bg-slate-500/10 text-slate-500")}>{r.status}</span></td></tr>)}</tbody></table></Card>
           )}
         </div>
       )}

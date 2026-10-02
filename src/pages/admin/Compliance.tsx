@@ -574,9 +574,9 @@ export default function ComplianceAdmin() {
             ) : (
               <div className="space-y-2">
                 {formControls.map((row, i) => (
-                  <div key={i} className="grid grid-cols-12 items-center gap-2">
+                  <div key={i} className="grid grid-cols-12 items-center gap-2 border-b border-phantix-700/30 pb-2 sm:border-0 sm:pb-0">
                     <select
-                      className="input col-span-3 !py-1.5 text-xs"
+                      className="input col-span-6 !py-1.5 text-xs sm:col-span-3"
                       value={row.framework_id}
                       onChange={(e) => updateControl(i, { framework_id: e.target.value })}
                     >
@@ -584,18 +584,18 @@ export default function ComplianceAdmin() {
                       {data.map((fw) => <option key={fw.id} value={fw.id}>{fw.id}</option>)}
                     </select>
                     <input
-                      className="input col-span-3 !py-1.5 text-xs"
+                      className="input col-span-6 !py-1.5 text-xs sm:col-span-3"
                       placeholder="control id (e.g. NDPA-34)"
                       value={row.control_id}
                       onChange={(e) => updateControl(i, { control_id: e.target.value })}
                     />
                     <input
-                      className="input col-span-5 !py-1.5 text-xs"
+                      className="input col-span-10 !py-1.5 text-xs sm:col-span-5"
                       placeholder="control title (optional)"
                       value={row.title}
                       onChange={(e) => updateControl(i, { title: e.target.value })}
                     />
-                    <button type="button" className="col-span-1 btn-ghost !px-1.5 !py-1 text-severity-critical" onClick={() => removeControl(i)} aria-label="Remove control">
+                    <button type="button" className="col-span-2 btn-ghost !px-1.5 !py-1 text-severity-critical sm:col-span-1" onClick={() => removeControl(i)} aria-label="Remove control">
                       <X size={13} />
                     </button>
                   </div>

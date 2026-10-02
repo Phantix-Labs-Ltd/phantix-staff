@@ -321,7 +321,7 @@ export default function ServerOps() {
       {loading && !d.related_processes.length ? (
         <TableSkeleton rows={4} />
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {/* Health + headline stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <StatCard
@@ -336,33 +336,34 @@ export default function ServerOps() {
             <StatCard label="DB Pool" value={`${d.database_pool.checkedout}/${d.database_pool.size}`} icon={<Database size={18} />} trend="neutral" trendLabel={`${d.database_pool.checkedin} checked in`} />
           </div>
 
-          {/* Realtime gauges */}
-          <div className="grid lg:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader title="CPU usage" subtitle="Realtime, %" action={<Cpu size={15} className="text-phantix-300" />} />
+          {/* Realtime gauges: one card, three columns. The stat tiles above
+              already name each resource and carry its headline number. */}
+          <Card pad="sm" className="grid gap-x-6 gap-y-3 lg:grid-cols-3">
+            <div>
+              <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-400"><Cpu size={13} className="text-phantix-300" /> CPU usage</p>
               <ProgressBar value={cpuPct} color={cpuPct > 85 ? "#F43F5E" : cpuPct > 60 ? "#FB923C" : "#38BDF8"} />
-              <div className="mt-3 flex justify-between text-xs text-slate-400">
+              <div className="mt-1.5 flex justify-between text-xs text-slate-400">
                 <span>Load avg</span>
                 <span className="font-mono text-slate-300">{d.resources.load_avg.length ? d.resources.load_avg.map((v) => v.toFixed(2)).join(" · ") : "Not set"}</span>
               </div>
-            </Card>
-            <Card>
-              <CardHeader title="Memory" subtitle="Host usage, %" action={<HardDrive size={15} className="text-emerald-400" />} />
+            </div>
+            <div>
+              <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-400"><HardDrive size={13} className="text-emerald-400" /> Memory</p>
               <ProgressBar value={memPct} color={memPct > 85 ? "#F43F5E" : memPct > 60 ? "#FB923C" : "#34D399"} />
-              <div className="mt-3 flex justify-between text-xs text-slate-400">
+              <div className="mt-1.5 flex justify-between text-xs text-slate-400">
                 <span>{d.resources.memory.used_mb} MB used / {d.resources.memory.total_mb} MB</span>
                 <span className="font-mono text-slate-300">{d.resources.disk.used_percent}% disk</span>
               </div>
-            </Card>
-            <Card>
-              <CardHeader title="DB pool" subtitle="Checked out, %" action={<Database size={15} className="text-gold-400" />} />
+            </div>
+            <div>
+              <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-400"><Database size={13} className="text-gold-400" /> DB pool</p>
               <ProgressBar value={poolPct} color={poolPct > 90 ? "#F43F5E" : poolPct > 70 ? "#FB923C" : "#E8B54D"} />
-              <div className="mt-3 flex justify-between text-xs text-slate-400">
+              <div className="mt-1.5 flex justify-between text-xs text-slate-400">
                 <span>{d.database_pool.checkedin} checked in · {d.database_pool.overflow} overflow</span>
                 <span className="font-mono text-slate-300">{timeAgo(d.timestamp)}</span>
               </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
 
           {/* History sparkline */}
           {history.length >= 2 && (

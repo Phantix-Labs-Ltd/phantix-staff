@@ -1,6 +1,6 @@
 // ── Staff Portal Types --- matches backend API docs ────────────────────────────
 
-export type StaffRole = "superadmin" | "admin" | "support" | "contributor";
+export type StaffRole = "superadmin" | "admin" | "support" | "contributor" | "editor";
 
 export type Severity = "critical" | "high" | "medium" | "low" | "info";
 
