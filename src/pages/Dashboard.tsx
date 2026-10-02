@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
-import { Building2, MessageSquare, Server, Wrench, FileText, Activity, CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react";
+import { Building2, MessageSquare, Server, Wrench, Activity, CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PageHeader, StatCard, AnimatedNumber, Card, CardHeader, TableSkeleton, SkeletonCard } from "@/components/ui";
 import { useResource } from "@/lib/useResource";
@@ -50,7 +50,7 @@ export default function Dashboard() {
       {stats.loading ? (
         <TableSkeleton rows={2} />
       ) : s ? (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           <StatCard label="Total Clients" value={<AnimatedNumber value={s.total_clients} />} icon={<Building2 size={18} />} />
           <StatCard label="Active" value={<AnimatedNumber value={s.active_clients} />} icon={<CheckCircle2 size={18} />} />
           <StatCard label="Connections" value={<>{s.healthy_connections}<span className="text-sm text-slate-500">/{s.total_connections}</span></>} icon={<Server size={18} />} />
@@ -58,20 +58,20 @@ export default function Dashboard() {
         </motion.div>
       ) : null}
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader title="Platform Health" subtitle="Connections, services, and infrastructure" />
           {s ? (
             <div className="space-y-2">
-              <div className="flex justify-between rounded-lg bg-phantix-800/40 px-3 py-2.5 text-sm">
+              <div className="flex justify-between rounded-lg bg-phantix-800/40 px-3 py-2 text-sm">
                 <span className="text-slate-400">DB Connections</span>
                 <span className="font-mono text-emerald-400">{s.healthy_connections}<span className="text-slate-500"> / {s.total_connections}</span> healthy</span>
               </div>
-              <div className="flex justify-between rounded-lg bg-phantix-800/40 px-3 py-2.5 text-sm">
+              <div className="flex justify-between rounded-lg bg-phantix-800/40 px-3 py-2 text-sm">
                 <span className="text-slate-400">Experience Services</span>
                 <span className="font-mono text-white">{s.experience_services_configured} configured</span>
               </div>
-              <div className="flex justify-between rounded-lg bg-phantix-800/40 px-3 py-2.5 text-sm">
+              <div className="flex justify-between rounded-lg bg-phantix-800/40 px-3 py-2 text-sm">
                 <span className="text-slate-400">Active Clients</span>
                 <span className="font-mono text-white">{s.active_clients}<span className="text-slate-500"> / {s.total_clients}</span></span>
               </div>
@@ -87,12 +87,12 @@ export default function Dashboard() {
           />
           {s ? (
             <div className="space-y-2">
-              <div className="flex justify-between rounded-lg bg-phantix-800/40 px-3 py-2.5 text-sm">
+              <div className="flex justify-between rounded-lg bg-phantix-800/40 px-3 py-2 text-sm">
                 <span className="text-slate-400">Open Tickets</span>
                 <Link to="/support" className="font-mono text-gold-400 hover:text-gold-300">{s.open_support_tickets}</Link>
               </div>
               {s.critical_open_tickets > 0 && (
-                <div className="flex justify-between rounded-lg bg-severity-critical/5 border border-severity-critical/20 px-3 py-2.5 text-sm">
+                <div className="flex justify-between rounded-lg bg-severity-critical/5 border border-severity-critical/20 px-3 py-2 text-sm">
                   <span className="flex items-center gap-1 text-severity-critical"><AlertTriangle size={14} /> Critical</span>
                   <span className="font-mono text-severity-critical">{s.critical_open_tickets}</span>
                 </div>
@@ -115,25 +115,6 @@ export default function Dashboard() {
 
       {/* Audit chain integrity (§10) — intact, or an unmissable broken state. */}
       <AuditChainCard />
-
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-        <Link to="/clients" className="card p-4 flex items-center gap-3 hover:border-phantix-500/60 transition-colors">
-          <Building2 size={20} className="text-phantix-400" />
-          <div><p className="text-sm font-medium text-white">Clients</p><p className="text-xs text-slate-400">Manage tenants</p></div>
-        </Link>
-        <Link to="/support" className="card p-4 flex items-center gap-3 hover:border-phantix-500/60 transition-colors">
-          <MessageSquare size={20} className="text-phantix-400" />
-          <div><p className="text-sm font-medium text-white">Support</p><p className="text-xs text-slate-400">Ticket queue</p></div>
-        </Link>
-        <Link to="/logs" className="card p-4 flex items-center gap-3 hover:border-phantix-500/60 transition-colors">
-          <FileText size={20} className="text-phantix-400" />
-          <div><p className="text-sm font-medium text-white">Logs</p><p className="text-xs text-slate-400">Diagnostics</p></div>
-        </Link>
-        <Link to="/server" className="card p-4 flex items-center gap-3 hover:border-phantix-500/60 transition-colors">
-          <Server size={20} className="text-phantix-400" />
-          <div><p className="text-sm font-medium text-white">Server</p><p className="text-xs text-slate-400">Platform health</p></div>
-        </Link>
-      </motion.div>
     </div>
   );
 }

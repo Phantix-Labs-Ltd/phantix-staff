@@ -322,9 +322,9 @@ export default function AiAdmin() {
 
           <div className="grid lg:grid-cols-2 gap-4 mb-6">
             <CollapsibleCard defaultOpen={false} title="Providers" subtitle="Configured AI model providers">
-              <div className="space-y-2">
+              <div className="divide-y divide-phantix-700/40 rounded-lg bg-phantix-800/40">
                 {data.providers.map((p: any) => (
-                  <div key={p.id} className="flex items-center justify-between rounded-lg bg-phantix-800/40 px-3 py-2.5">
+                  <div key={p.id} className="flex items-center justify-between px-3 py-1.5">
                     <div className="flex items-center gap-2">
                       <Brain size={15} className="text-phantix-400" />
                       <span className="text-sm text-slate-200 capitalize">{p.id}</span>
