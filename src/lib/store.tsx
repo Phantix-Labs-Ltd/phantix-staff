@@ -36,6 +36,8 @@ type Store = {
   /** Clear the first-login password-change requirement after a successful change. */
   clearMustChangePassword: () => void;
   isAdmin: boolean;
+  /** Editorial desk: editor, admin or superadmin. Gates the Weekly. */
+  isEditor: boolean;
   isContributor: boolean;
   isSuperadmin: boolean;
   isAgiAdmin: boolean;
@@ -172,6 +174,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const isAdmin = session?.role === "admin" || session?.role === "superadmin";
+  const isEditor = isAdmin || session?.role === "editor";
   const isSuperadmin = session?.role === "superadmin";
   const isContributor = isAdmin || session?.role === "contributor";
   const isAgiAdmin = Boolean(session?.agi_admin) || isSuperadmin;
@@ -192,7 +195,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, [session]);
 
   return (
-    <Ctx.Provider value={{ session, sessionLoading, login, logout, hydrateSession, clearMustChangePassword, isAdmin, isContributor, isSuperadmin, isAgiAdmin, toasts, toast, dismissToast }}>
+    <Ctx.Provider value={{ session, sessionLoading, login, logout, hydrateSession, clearMustChangePassword, isAdmin, isEditor, isContributor, isSuperadmin, isAgiAdmin, toasts, toast, dismissToast }}>
       {children}
     </Ctx.Provider>
   );

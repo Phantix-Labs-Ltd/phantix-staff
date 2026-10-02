@@ -85,8 +85,18 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function RequireSuperadmin({ children }: { children: React.ReactNode }) {
-  const { session, sessionLoading, isSuperadmin } = useStore();
+/** The Weekly desk: editor, admin or superadmin. */
+function RequireEditor({ children }: { children: React.ReactNode }) {
+  const { session, sessionLoading, isEditor } = useStore();
+  const location = useLocation();
+  if (sessionLoading) return <GateLoader />;
+  if (!session?.authenticated) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (session.mustChangePassword) return <Navigate to="/change-password" replace />;
+  if (!isEditor) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
+function RequireSuperadmin({ children }: { children: React.ReactNode }) {  const { session, sessionLoading, isSuperadmin } = useStore();
   if (sessionLoading) return <GateLoader />;
   if (!session?.authenticated) return <Navigate to="/login" replace />;
   if (session.mustChangePassword) return <Navigate to="/change-password" replace />;
@@ -153,7 +163,7 @@ export default function App() {
             <Route path="/soc-provisioning" element={<RequireAdmin><SocProvisioning /></RequireAdmin>} />
             <Route path="/email-templates" element={<RequireAdmin><EmailTemplates /></RequireAdmin>} />
             <Route path="/legal-documents" element={<RequireAdmin><LegalDocuments /></RequireAdmin>} />
-            <Route path="/weekly" element={<RequireAdmin><WeeklyAdmin /></RequireAdmin>} />
+            <Route path="/weekly" element={<RequireEditor><WeeklyAdmin /></RequireEditor>} />
             <Route path="/tooling" element={<RequireAdmin><ToolingAdmin /></RequireAdmin>} />
             <Route path="/discovery" element={<RequireAdmin><DiscoveryAdmin /></RequireAdmin>} />
             <Route path="/experience" element={<RequireAdmin><ExperienceAdmin /></RequireAdmin>} />

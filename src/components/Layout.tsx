@@ -24,6 +24,7 @@ type NavLeafItem = {
   adminOnly?: boolean;
   superadminOnly?: boolean;
   contributorOnly?: boolean;
+  editorOnly?: boolean;
   agiOnly?: boolean;
   external?: boolean;
   // Open in the same tab (keeps sessionStorage, e.g. the API Reference page
@@ -70,7 +71,7 @@ const moreOperationsSubItems: NavLeafItem[] = [
 
 const navSections: {
   label: string;
-  role: "all" | "admin" | "superadmin" | "contributor";
+  role: "all" | "admin" | "superadmin" | "contributor" | "editor";
   items: NavEntry[];
 }[] = [
   {
@@ -106,12 +107,18 @@ const navSections: {
     ],
   },
   {
+    label: "Editorial",
+    role: "editor",
+    items: [
+      { to: "/weekly", label: "The Weekly", icon: <Newspaper size={18} /> },
+    ],
+  },
+  {
     label: "Catalogs",
     role: "admin",
     items: [
       { to: "/compliance", label: "Compliance", icon: <FileCheck size={18} /> },
       { to: "/tooling", label: "Tooling", icon: <Wrench size={18} /> },
-      { to: "/weekly", label: "The Weekly", icon: <Newspaper size={18} /> },
       { type: "dropdown", label: "More Catalogs", icon: <MoreHorizontal size={18} />, items: moreCatalogsSubItems },
     ],
   },
@@ -147,11 +154,12 @@ const navSections: {
 /** True when at least one role flag on `item` is set and satisfied by the caller's roles. */
 function isItemVisible(
   item: NavLeafItem,
-  roles: { isAdmin: boolean; isSuperadmin: boolean; isContributor: boolean; isAgiAdmin: boolean },
+  roles: { isAdmin: boolean; isEditor: boolean; isSuperadmin: boolean; isContributor: boolean; isAgiAdmin: boolean },
 ): boolean {
   if (item.superadminOnly && !roles.isSuperadmin) return false;
   if (item.adminOnly && !roles.isAdmin) return false;
   if (item.contributorOnly && !roles.isContributor) return false;
+  if (item.editorOnly && !roles.isEditor) return false;
   if (item.agiOnly && (!roles.isAgiAdmin || !AGI_ENABLED)) return false;
   return true;
 }
@@ -161,7 +169,7 @@ function isItemVisible(
  *  none remain). */
 function visibleNavEntries(
   items: NavEntry[],
-  roles: { isAdmin: boolean; isSuperadmin: boolean; isContributor: boolean; isAgiAdmin: boolean },
+  roles: { isAdmin: boolean; isEditor: boolean; isSuperadmin: boolean; isContributor: boolean; isAgiAdmin: boolean },
 ): NavEntry[] {
   const out: NavEntry[] = [];
   for (const item of items) {
@@ -254,7 +262,7 @@ function NavDropdown({ label, icon, items, onNavigate, mobile }: NavDropdownItem
 }
 
 export default function Layout() {
-  const { session, logout, isAdmin, isSuperadmin, isAgiAdmin, isContributor } = useStore();
+  const { session, logout, isAdmin, isEditor, isSuperadmin, isAgiAdmin, isContributor } = useStore();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -276,10 +284,11 @@ export default function Layout() {
   // The same role-filtered nav the sidebar renders, flattened for search — so
   // the palette can never offer a page this operator cannot open.
   const paletteIndex = useMemo<PaletteItem[]>(() => {
-    const roles = { isAdmin, isSuperadmin, isContributor, isAgiAdmin };
+    const roles = { isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin };
     const out: PaletteItem[] = [];
     for (const section of navSections) {
       if (section.role === "admin" && !isAdmin) continue;
+      if (section.role === "editor" && !isEditor) continue;
       if (section.role === "superadmin" && !isSuperadmin) continue;
       if (section.role === "contributor" && !isContributor) continue;
       for (const item of visibleNavEntries(section.items, roles)) {
@@ -340,9 +349,10 @@ export default function Layout() {
         <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-1.5">
           {navSections.map((section) => {
             if (section.role === "admin" && !isAdmin) return null;
+            if (section.role === "editor" && !isEditor) return null;
             if (section.role === "superadmin" && !isSuperadmin) return null;
             if (section.role === "contributor" && !isContributor) return null;
-            const visibleItems = visibleNavEntries(section.items, { isAdmin, isSuperadmin, isContributor, isAgiAdmin });
+            const visibleItems = visibleNavEntries(section.items, { isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin });
             if (!visibleItems.length) return null;
 
             return (
@@ -435,9 +445,10 @@ export default function Layout() {
             <nav className="px-4 py-3 space-y-2">
               {navSections.map((section) => {
                 if (section.role === "admin" && !isAdmin) return null;
+            if (section.role === "editor" && !isEditor) return null;
                 if (section.role === "superadmin" && !isSuperadmin) return null;
                 if (section.role === "contributor" && !isContributor) return null;
-                const visibleItems = visibleNavEntries(section.items, { isAdmin, isSuperadmin, isContributor, isAgiAdmin });
+                const visibleItems = visibleNavEntries(section.items, { isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin });
                 if (!visibleItems.length) return null;
                 return (
                   <div key={section.label} className="mb-3">
