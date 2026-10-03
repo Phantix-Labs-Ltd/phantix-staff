@@ -107,6 +107,7 @@ const navSections: NavGroupDef[] = [
     role: "admin",
     items: [
       { to: "/compliance", label: "Compliance", icon: <FileCheck size={18} /> },
+      { to: "/audits", label: "Audits", icon: <FileCheck size={18} /> },
       { to: "/tooling", label: "Tooling", icon: <Wrench size={18} /> },
       { to: "/soc-provisioning", label: "SOC Provisioning", icon: <Shield size={18} /> },
       { to: "/discovery", label: "Discovery", icon: <Search size={18} /> },
@@ -215,8 +216,8 @@ function NavLeafLink({ item, onClick, mobile }: { item: NavLeafItem; onClick?: (
 }
 
 /**
- * One sidebar group. The parent keeps one group open at a time and opens the
- * group of the current route, so deep-linking still shows where you are.
+ * One sidebar group. Groups open and close independently, and the parent opens
+ * the group of the current route, so deep-linking still shows where you are.
  */
 function NavGroup({
   section,
@@ -260,7 +261,7 @@ function NavGroup({
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="ml-[1.1rem] mt-0.5 space-y-0.5 border-l border-phantix-700/50 pl-2">
+            <div className="ml-[1.1rem] mb-1 mt-1 space-y-1 border-l border-phantix-700/50 pl-2.5">
               {section.items.map((item) => (
                 <NavLeafLink key={item.to} item={item} onClick={onNavigate} mobile={mobile} />
               ))}
@@ -298,20 +299,31 @@ export default function Layout() {
     () => visibleNavSections({ isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin }),
     [isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin],
   );
-  // One group open at a time; landing on a page opens the group it lives in.
+  // Any number of groups can be open; landing on a page also opens the group
+  // it lives in, without closing the others.
   const activeGroup = useMemo(() => activeGroupLabel(sections, location.pathname), [sections, location.pathname]);
-  const [openGroup, setOpenGroup] = useState<string | null>(activeGroup);
+  const [openGroups, setOpenGroups] = useState<Set<string>>(
+    () => new Set(activeGroup ? [activeGroup] : []),
+  );
   useEffect(() => {
-    if (activeGroup) setOpenGroup(activeGroup);
+    if (activeGroup) {
+      setOpenGroups((open) => (open.has(activeGroup) ? open : new Set(open).add(activeGroup)));
+    }
   }, [activeGroup]);
   const renderNav = (mobile: boolean) =>
     sections.map((section) => (
       <NavGroup
         key={section.label}
         section={section}
-        open={openGroup === section.label}
+        open={openGroups.has(section.label)}
         active={activeGroup === section.label}
-        onToggle={() => setOpenGroup((g) => (g === section.label ? null : section.label))}
+        onToggle={() =>
+          setOpenGroups((open) => {
+            const next = new Set(open);
+            if (!next.delete(section.label)) next.add(section.label);
+            return next;
+          })
+        }
         onNavigate={mobile ? () => setMenuOpen(false) : undefined}
         mobile={mobile}
       />
@@ -370,7 +382,7 @@ export default function Layout() {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
           {renderNav(false)}
 
           {/* Launch app */}
@@ -444,7 +456,7 @@ export default function Layout() {
             transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-x-0 top-16 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-phantix-700/30 bg-phantix-950/98 shadow-card lg:hidden"
           >
-            <nav className="px-4 py-3 space-y-0.5">
+            <nav className="px-4 py-4 space-y-1.5">
               {renderNav(true)}
             </nav>
           </motion.div>
