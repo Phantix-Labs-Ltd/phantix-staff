@@ -911,10 +911,10 @@ export const UNITS: TopologyUnit[] = [
   },
   {
     "id": "e-github",
-    "label": "GitHub App (phantix-security-solutions)",
+    "label": "GitHub App (securegraph-by-phantix-labs)",
     "kind": "observer",
     "boundary": "egress",
-    "note": "GITHUB_APP_ID + private key SET, slug phantix-security-solutions. Asset engine + branch review + autofix PRs."
+    "note": "GITHUB_APP_ID + private key SET, slug securegraph-by-phantix-labs. Sign-in + asset engine + branch review + autofix PRs."
   },
   {
     "id": "e-paystack",

@@ -107,6 +107,7 @@ const navSections: NavGroupDef[] = [
     role: "admin",
     items: [
       { to: "/compliance", label: "Compliance", icon: <FileCheck size={18} /> },
+      { to: "/audits", label: "Audits", icon: <FileCheck size={18} /> },
       { to: "/tooling", label: "Tooling", icon: <Wrench size={18} /> },
       { to: "/soc-provisioning", label: "SOC Provisioning", icon: <Shield size={18} /> },
       { to: "/discovery", label: "Discovery", icon: <Search size={18} /> },

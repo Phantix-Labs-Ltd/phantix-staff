@@ -18,6 +18,7 @@ import ServicesHealth from "@/pages/admin/ServicesHealth";
 import AiAdmin from "@/pages/admin/AiAdmin";
 import AgentActivityAdmin from "@/pages/admin/AgentActivity";
 import ComplianceAdmin from "@/pages/admin/Compliance";
+import AuditConsole from "@/pages/admin/AuditConsole";
 import ToolingAdmin from "@/pages/admin/Tooling";
 import ExperienceAdmin from "@/pages/admin/Experience";
 import ScannerTools from "@/pages/admin/ScannerTools";
@@ -160,6 +161,7 @@ export default function App() {
             <Route path="/demo-requests" element={<RequireAdmin><DemoRequestsAdmin /></RequireAdmin>} />
             <Route path="/feedback" element={<RequireAdmin><FeedbackAdmin /></RequireAdmin>} />
             <Route path="/compliance" element={<RequireAdmin><ComplianceAdmin /></RequireAdmin>} />
+            <Route path="/audits" element={<RequireAdmin><AuditConsole /></RequireAdmin>} />
             <Route path="/soc-provisioning" element={<RequireAdmin><SocProvisioning /></RequireAdmin>} />
             <Route path="/email-templates" element={<RequireAdmin><EmailTemplates /></RequireAdmin>} />
             <Route path="/legal-documents" element={<RequireAdmin><LegalDocuments /></RequireAdmin>} />
