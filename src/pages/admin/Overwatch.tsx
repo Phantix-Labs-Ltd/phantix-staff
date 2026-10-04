@@ -11,7 +11,7 @@
  * the same shape — raw counters plus a baseline read from the logs — so nothing durable
  * exists anywhere in this path. Logs remain the record; this is a lens over them.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -58,6 +58,17 @@ const SIGNAL_COLOR: Record<Ranked["signal"], string> = {
 export default function Overwatch() {
   const [paused, setPaused] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  // Esc leaves the full-screen watch
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fullscreen]);
   const { snapshot, ranked, samples, error, lastAt, refresh } = useOverwatch(15000, !paused);
   const { lines, connected } = useEventTail(!paused);
 
@@ -87,6 +98,7 @@ export default function Overwatch() {
 
   return (
     <div className="flex h-full flex-col">
+      {!fullscreen && (
       <PageHeader
         title="Overwatch"
         description="Realtime watch over every engine and everything deployed. Read-only, superadmin only, and it stores nothing — logs remain the record of what happened."
@@ -111,8 +123,9 @@ export default function Overwatch() {
           </>
         }
       />
+      )}
 
-      {error && (
+      {error && !fullscreen && (
         <div className="mb-4 flex items-center gap-2 rounded-lg border border-severity-critical/40 bg-severity-critical/10 px-3 py-2 text-sm text-severity-critical">
           <AlertTriangle size={14} />
           {error}
@@ -122,6 +135,7 @@ export default function Overwatch() {
         </div>
       )}
 
+      {!fullscreen && (
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <StatCard label="units watched" value={UNITS.length} icon={<Layers size={16} />} />
         <StatCard
@@ -151,10 +165,16 @@ export default function Overwatch() {
           trendLabel={snapshot ? `seed ${snapshot.seed.windowHours}h · ${snapshot.seed.errorsPerHour}/h errors` : "—"}
         />
       </div>
+      )}
 
-      <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[1fr_400px]">
+      <div className={cx("mt-4 grid min-h-0 flex-1 grid-cols-1 gap-4", !fullscreen && "xl:grid-cols-[1fr_400px]")}>
         {/* ── the watch itself */}
-        <Card className="flex min-h-[460px] flex-col overflow-hidden !p-0">
+        <Card
+          className={cx(
+            "flex min-h-[460px] flex-col overflow-hidden !p-0",
+            fullscreen && "fixed inset-0 z-[70] min-h-0 rounded-none border-0 bg-phantix-950",
+          )}
+        >
           <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
             <div className="flex items-center gap-2 text-xs text-slate-400">
               <Activity size={13} className="text-emerald-400" />
@@ -177,6 +197,8 @@ export default function Overwatch() {
                 highlight={highlight}
                 selected={selected}
                 onSelect={setSelected}
+                fullscreen={fullscreen}
+                onToggleFullscreen={() => setFullscreen((f) => !f)}
               />
             ) : (
               <EmptyState
@@ -188,6 +210,7 @@ export default function Overwatch() {
           </div>
         </Card>
 
+        {!fullscreen && (
         <div className="flex min-h-0 flex-col gap-4 overflow-y-auto pr-1">
           {/* ── where to look first */}
           <Card>
@@ -353,9 +376,11 @@ export default function Overwatch() {
             </Card>
           ) : null}
         </div>
+        )}
       </div>
 
       {/* ── the tail: bounded, in memory only. This is detail, not the signal. */}
+      {!fullscreen && (
       <Card className="mt-4 flex h-[190px] shrink-0 flex-col overflow-hidden !p-0">
         <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
           <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -396,6 +421,7 @@ export default function Overwatch() {
           )}
         </div>
       </Card>
+      )}
     </div>
   );
 }
