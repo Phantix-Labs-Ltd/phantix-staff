@@ -14,6 +14,8 @@ type Program = {
   status?: string;
   maxMembers?: number;
   max_members?: number;
+  /** New sign-ups still to join automatically (0 = applications only). */
+  autoEnrollRemaining?: number;
 };
 
 type Member = {
@@ -83,6 +85,7 @@ function normalizeProgram(p: any): Program {
     status: p?.status != null ? String(p.status) : undefined,
     maxMembers: Number(p?.maxMembers ?? p?.max_members ?? 20),
     max_members: Number(p?.max_members ?? p?.maxMembers ?? 20),
+    autoEnrollRemaining: Number(p?.autoEnrollRemaining ?? p?.auto_enroll_remaining ?? 0),
   };
 }
 
@@ -161,6 +164,7 @@ export default function SandboxAdmin() {
     description: "Design partners on staging",
     max_members: 20,
   });
+  const [autoEnroll, setAutoEnroll] = useState("20");
   const [formEnroll, setFormEnroll] = useState({ organization_id: "", contact_email: "", notes: "" });
   const [formUpdate, setFormUpdate] = useState({
     title: "",
@@ -298,6 +302,26 @@ export default function SandboxAdmin() {
     }
   };
 
+  const saveAutoEnroll = async (count: number) => {
+    if (DEMO_MODE || !programId) return;
+    setBusy(true);
+    try {
+      const p = normalizeProgram(
+        await api.patch(`/admin/sandbox/programs/${programId}`, { auto_enroll_remaining: count }),
+      );
+      toast(
+        "success",
+        count > 0 ? `The next ${count} sign-ups join automatically` : "Automatic joining is off",
+        count > 0 ? `Seats: ${p.maxMembers}` : "New orgs can still apply",
+      );
+      await refresh(programId, true);
+    } catch (e) {
+      toast("error", "Could not save", e instanceof Error ? e.message : "");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const patchMember = async (memberId: number, status: string) => {
     if (DEMO_MODE || !memberId) return;
     try {
@@ -350,7 +374,7 @@ export default function SandboxAdmin() {
     <div>
       <PageHeader
         title="Sandbox management"
-        description="Cohort board · deploy notes · ratings (≤20 orgs)"
+        description="Cohort board · deploy notes · ratings"
         actions={
           <div className="flex flex-wrap gap-2">
             <button type="button" className="btn-ghost !text-xs" onClick={() => void refresh(programId)}>
@@ -422,6 +446,47 @@ export default function SandboxAdmin() {
               <p className="mt-1 font-display text-xl font-bold text-white">{board.ratingCount ?? ratings.length}</p>
             </Card>
           </div>
+
+          <Card className="mb-5 !p-4">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-100">New sign-ups join automatically</p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {(board.program.autoEnrollRemaining ?? 0) > 0
+                    ? `On: the next ${board.program.autoEnrollRemaining} organizations to register join this cohort as active testers.`
+                    : board.program.status === "active"
+                      ? "Off: organizations join only by applying or when you enroll them."
+                      : "Off: the cohort is not active."}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-end gap-2">
+                <label className="text-xs text-slate-400">
+                  Next sign-ups
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    className="input mt-1 !w-24"
+                    value={autoEnroll}
+                    onChange={(e) => setAutoEnroll(e.target.value)}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="btn-primary !text-xs"
+                  disabled={busy || board.program.status !== "active" || !(Number(autoEnroll) >= 1 && Number(autoEnroll) <= 100)}
+                  onClick={() => void saveAutoEnroll(Math.floor(Number(autoEnroll)))}
+                >
+                  {busy ? <Spinner className="h-4 w-4" /> : (board.program.autoEnrollRemaining ?? 0) > 0 ? "Update" : "Turn on"}
+                </button>
+                {(board.program.autoEnrollRemaining ?? 0) > 0 && (
+                  <button type="button" className="btn-ghost !text-xs" disabled={busy} onClick={() => void saveAutoEnroll(0)}>
+                    Turn off
+                  </button>
+                )}
+              </div>
+            </div>
+          </Card>
 
           <Card className="mb-5 !p-0 overflow-hidden">
             <div className="border-b border-phantix-700/40 px-5 py-3">
