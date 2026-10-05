@@ -35,6 +35,7 @@ import {
   type NodeStatus,
 } from "@/lib/agiGraph";
 import type { AgiAction, AgiEngagement, AgiSession, AgiSkillPlan, AgiTranscriptChunk, EngineCallEvent, Severity } from "@/lib/types";
+import { agiHardStopRemaining, agiPilotStatusCopy, readAgiPilotPosture } from "@/lib/agiPilot";
 import { SkillPlanSidePanel } from "@/components/AgiCoevolution";
 import { cx } from "@/lib/utils";
 import { useStickToBottom } from "@/lib/useStickToBottom";
@@ -290,12 +291,17 @@ function SessionSummary({
   turnMetrics,
   findingsCount,
   phaseStats,
+  session,
 }: {
   turnMetrics: { turns: number; promptTokens: number; completionTokens: number; tools: number; wallSeconds: number };
   findingsCount: number;
   phaseStats: { id: string; total: number; done: number; live: boolean }[];
+  session?: AgiSession | null;
 }) {
   const totalTokens = turnMetrics.promptTokens + turnMetrics.completionTokens;
+  const posture = session ? readAgiPilotPosture(session) : null;
+  const hardStop = session ? agiHardStopRemaining(session) : null;
+  const pilotLine = session ? agiPilotStatusCopy(session) : null;
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-phantix-700/40 bg-phantix-900/30 px-4 py-1.5">
       <div className="flex items-center gap-1.5">
@@ -311,6 +317,19 @@ function SessionSummary({
         ))}
       </div>
       <div className="ml-auto flex items-center gap-2.5">
+        {pilotLine && (
+          <span
+            className={cx(
+              "wb-2xs max-w-[280px] truncate",
+              posture?.enabled ? "text-gold-300/90" : "text-amber-300/90",
+              hardStop?.urgent && "text-amber-200",
+            )}
+            title={pilotLine}
+          >
+            {posture?.enabled ? "Pilot" : "Lab"} · {posture?.autonomy}
+            {hardStop ? ` · ${hardStop.label}` : ""}
+          </span>
+        )}
         <span className="wb-2xs text-slate-400"><span className="font-semibold text-slate-300">{turnMetrics.turns}</span> turns</span>
         <span className="wb-2xs text-slate-400"><span className="font-semibold text-slate-300">{turnMetrics.tools}</span> tools</span>
         <span className="wb-2xs text-slate-400"><span className="font-semibold text-slate-300">{findingsCount}</span> findings</span>
@@ -573,7 +592,7 @@ export default function AgiConsole({
         </div>
       </div>
 
-      <SessionSummary turnMetrics={turnMetrics} findingsCount={findings.length} phaseStats={phaseStats} />
+      <SessionSummary turnMetrics={turnMetrics} findingsCount={findings.length} phaseStats={phaseStats} session={session} />
 
       {policyBanner && (
         <div className="flex items-center gap-2 border-b border-severity-critical/30 bg-severity-critical/10 px-4 py-1.5">
