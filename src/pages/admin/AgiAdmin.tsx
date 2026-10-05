@@ -27,6 +27,8 @@ import {
   agiErrorDetail, streamAgiSession, loadAgiEngineCatalog, loadAgiEngineLearning, loadAgiSessionJob, loadAgiApkAssets, trainAgiSession,
   loadAgiSessionSkillPlan, normalizeAgiLoop, answerAgiClarification,
   pauseAgiSession, resumeAgiSession,
+  AGI_PILOT, agiHardStopRemaining, agiPilotStatusCopy, isCustomerAgiFindingVisible,
+  readAgiPilotPosture,
 } from "@/lib/agi";
 import { EngineLearningPanel, EngineSnapshotCards, JobCoveragePanel, EngineCallList, AgiSkillPlanBanner, AgiToolsToProvisionStrip, CollapseCard } from "@/components/AgiCoevolution";
 import AgiPrompts from "@/components/AgiPrompts";
@@ -932,7 +934,7 @@ import {
 // ── Engagement create modal ───────────────────────────────────────────────────
 function EngagementForm({ orgs, onCreated }: { orgs: { id: number; name: string }[]; onCreated: (e: AgiEngagement) => void }) {
   const { toast } = useStore();
-  const [form, setForm] = useState({ organization_id: orgs[0]?.id ?? 0, name: "", description: "", allowlist: "", forbidden: "dos\nransomware\ndata_exfil_bulk", roe: "", max_minutes: 120, environment: "staging" as "staging" | "production", production_ack: false, mobile_apk_asset_id: 0 });
+  const [form, setForm] = useState({ organization_id: orgs[0]?.id ?? 0, name: "", description: "", allowlist: "", forbidden: "dos\nransomware\ndata_exfil_bulk", roe: "", max_minutes: AGI_PILOT.defaultHardStopMinutes, environment: "staging" as "staging" | "production", production_ack: false, mobile_apk_asset_id: 0 });
   const [creating, setCreating] = useState(false);
   const [mode, setMode] = useState<TestingMode>(DEFAULT_TESTING_MODE);
   const [ctx, setCtx] = useState<EngagementContext>(EMPTY_ENGAGEMENT_CONTEXT);
@@ -963,7 +965,7 @@ function EngagementForm({ orgs, onCreated }: { orgs: { id: number; name: string 
           target_allowlist: targets,
           forbidden_actions: form.forbidden.split(/[\n,]/).map((s) => s.trim()).filter(Boolean),
           rules_of_engagement: form.roe.trim(),
-          max_session_minutes: Number(form.max_minutes) || 120,
+          max_session_minutes: Number(form.max_minutes) || AGI_PILOT.defaultHardStopMinutes,
           target_environment: form.environment,
           production_ack: form.environment === "production" ? form.production_ack : false,
           mobile_apk_asset_id: form.mobile_apk_asset_id || undefined,
@@ -1066,6 +1068,10 @@ function FindingsPanel({ sessionId }: { sessionId: number }) {
   const act = async (f: AgiFinding, kind: "promote" | "verified" | "dismissed") => {
     const fid = String(f.finding_id ?? f.id ?? "");
     if (!fid) return;
+    if (kind === "promote" && !isCustomerAgiFindingVisible(f as unknown as Record<string, unknown>)) {
+      toast("warning", "Verify first", "Only confirmed/verified findings can be promoted to the risk register.");
+      return;
+    }
     try {
       if (kind === "promote") await promoteAgiFinding(sessionId, fid);
       else await setAgiFindingStatus(sessionId, fid, kind, kind === "verified" ? "Verified by operator" : "");
@@ -1156,8 +1162,11 @@ function FindingsPanel({ sessionId }: { sessionId: number }) {
             );
           })()}
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            {!f.risk_id && (
+            {!f.risk_id && isCustomerAgiFindingVisible(f as unknown as Record<string, unknown>) && (
               <button onClick={() => void act(f, "promote")} className="btn-secondary !px-2.5 !py-1.5 !text-[13px]"><GitBranch size={12} className="mr-1 inline" /> Promote to risk</button>
+            )}
+            {!f.risk_id && !isCustomerAgiFindingVisible(f as unknown as Record<string, unknown>) && (
+              <span className="chip border-phantix-600/40 bg-phantix-800/50 text-[12px] text-slate-500">verify before promote</span>
             )}
             <button onClick={() => void act(f, "verified")} className="btn-ghost !px-2.5 !py-1.5 !text-[13px]"><CheckCircle2 size={12} className="mr-1 inline" /> Verify</button>
             <button onClick={() => void act(f, "dismissed")} className="btn-ghost !px-2.5 !py-1.5 !text-[13px] text-slate-500"><XCircle size={12} className="mr-1 inline" /> Dismiss</button>
@@ -1453,6 +1462,8 @@ export default function AgiAdmin() {
   const [skillOpen, setSkillOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<AgiSkill | null>(null);
   const [autonomy, setAutonomy] = useState<"low" | "medium" | "high">("medium");
+  /** Lab/eval opt-out — allows high autonomy through the pilot clamp. */
+  const [allowLabOptOut, setAllowLabOptOut] = useState(false);
   const [includeOrgAssets, setIncludeOrgAssets] = useState(true);
   const [preapproveLabAuth, setPreapproveLabAuth] = useState(false);
   const [startCreds, setStartCreds] = useState({ login_url: "", username: "", password: "" });
@@ -1568,6 +1579,7 @@ export default function AgiAdmin() {
       toast("info", "Provisioning container…", "Docker workspace can take up to ~2 minutes.");
       const s = await startAgiSession(eng.id, instructionText, {
         autonomy,
+        allowHighAutonomy: allowLabOptOut,
         include_org_assets: includeOrgAssets,
         preapprove_lab_auth: preapproveLabAuth,
         credentials: credsOpen && startCreds.login_url && startCreds.username && startCreds.password ? {
@@ -1619,6 +1631,9 @@ export default function AgiAdmin() {
 
   // Full-screen live session view — fills the content area with a top back nav.
   if (sessionView && activeSession) {
+    const posture = readAgiPilotPosture(activeSession);
+    const hardStop = agiHardStopRemaining(activeSession);
+    const pilotLine = agiPilotStatusCopy(activeSession);
     return (
       <div className="flex h-[calc(100vh-6.5rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-phantix-700/40 bg-phantix-950">
         <div className="flex shrink-0 items-center gap-3 border-b border-phantix-700/40 bg-phantix-950/80 px-4 py-2.5">
@@ -1629,6 +1644,18 @@ export default function AgiAdmin() {
             <p className="truncate text-[12px] text-slate-500">session #{activeSession.id} · engagement #{activeSession.engagement_id}{activeSession.container_id ? ` · ${activeSession.container_id}` : ""}</p>
           </div>
           <StatusBadge status={activeSession.status} />
+          <span
+            className={cx(
+              "chip !px-2 !py-0.5 text-[12px]",
+              posture.enabled
+                ? "border-gold-400/30 bg-gold-400/10 text-gold-300"
+                : "border-amber-400/30 bg-amber-400/10 text-amber-300",
+            )}
+            title={pilotLine}
+          >
+            {posture.enabled ? "pilot" : "lab"} · {posture.autonomy}
+            {hardStop ? ` · ${hardStop.label}` : posture.hardStopMinutes ? ` · ${posture.hardStopMinutes}m cap` : ""}
+          </span>
           <span className="ml-auto min-w-0 max-w-[220px] truncate font-mono text-[12px] text-slate-500" title={selectedForSession?.name ?? ""}>{selectedForSession?.name ?? ""}</span>
         </div>
         <div className="min-h-0 flex-1">
@@ -1778,8 +1805,8 @@ export default function AgiAdmin() {
                     <label className="mb-1 block text-[12px] font-semibold uppercase tracking-wider text-slate-500">Autonomy</label>
                     <select value={autonomy} onChange={(e) => setAutonomy(e.target.value as "low" | "medium" | "high")} className="input !w-auto !py-1.5 text-[13px]">
                       <option value="low">low, operator-driven</option>
-                      <option value="medium">medium, automatic recon, gate auth</option>
-                      <option value="high">high — reserved</option>
+                      <option value="medium">medium, automatic recon, gate exploit</option>
+                      <option value="high" disabled={!allowLabOptOut}>high — lab opt-out only</option>
                     </select>
                   </div>
                   <label className="flex items-center gap-1.5 pt-4 text-[13px] text-slate-400" title="Turns off lab auto-login if any non-lab host is in scope">
@@ -1790,11 +1817,30 @@ export default function AgiAdmin() {
                     <input type="checkbox" checked={preapproveLabAuth} onChange={(e) => setPreapproveLabAuth(e.target.checked)} className="accent-[rgb(var(--gold-400))]" />
                     Pre-approve lab auth
                   </label>
+                  <label
+                    className="flex items-center gap-1.5 pt-4 text-[13px] text-amber-300/90"
+                    title="Lab/eval only. Allows autonomy high through the pilot clamp; pair with engagement allow_offensive_auto / pilot_posture=false on the backend."
+                  >
+                    <input
+                      type="checkbox"
+                      checked={allowLabOptOut}
+                      onChange={(e) => {
+                        const on = e.target.checked;
+                        setAllowLabOptOut(on);
+                        if (!on && autonomy === "high") setAutonomy("medium");
+                      }}
+                      className="accent-[rgb(var(--gold-400))]"
+                    />
+                    Lab opt-out (allow high)
+                  </label>
                   <button onClick={() => setCredsOpen((v) => !v)} className={cx("pt-4 btn-ghost !px-2.5 !py-1.5 !text-[13px]", credsOpen && "text-gold-300")}>
                     <ShieldCheck size={12} className="mr-1 inline" /> Login credentials
                   </button>
                 </div>
-                <p className="mt-1.5 text-[12px] leading-4 text-slate-600">Lab-only engagements: leave org assets off so the lab account pack can auto-provision. Mixed allowlists keep auth gated.</p>
+                <p className="mt-1.5 text-[12px] leading-4 text-slate-600">
+                  Pilot default: autonomy ≤ medium, hard stop {AGI_PILOT.defaultHardStopMinutes}m, exploit/brute gated, promote only after verify.
+                  Lab-only engagements: leave org assets off so the lab account pack can auto-provision.
+                </p>
                 {credsOpen && (
                   <div className="mt-2 grid gap-2 sm:grid-cols-3">
                     <input value={startCreds.login_url} onChange={(e) => setStartCreds({ ...startCreds, login_url: e.target.value })} placeholder="Login URL" className="rounded-lg border border-phantix-700/50 bg-phantix-950/60 px-3 py-2 text-xs text-slate-200 outline-none placeholder:text-slate-600 focus:border-gold-400/40" />

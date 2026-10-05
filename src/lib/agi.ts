@@ -3,6 +3,7 @@
 // Demo-mode fallbacks so the portal is usable without a live runner.
 
 import { api, ApiError, API_BASE, DEMO_MODE, delay } from "./api";
+import { AGI_PILOT, clampAgiAutonomy, type AgiAutonomy } from "./agiPilot";
 import type {
   AgiAction,
   AgiActivePolicy,
@@ -27,6 +28,17 @@ import type {
   AgiToolToProvision,
   AgiSelectedSkillChip,
 } from "./types";
+
+export {
+  AGI_PILOT,
+  clampAgiAutonomy,
+  readAgiPilotPosture,
+  agiHardStopRemaining,
+  isCustomerAgiFindingVisible,
+  agiPilotStatusCopy,
+  type AgiAutonomy,
+  type AgiPilotPostureSummary,
+} from "./agiPilot";
 
 /** Session start may wait on Docker provision (~120s). Do not use the default short fetch. */
 export const AGI_SESSION_START_TIMEOUT_MS = 180_000;
@@ -501,12 +513,16 @@ export async function createAgiEngagement(payload: {
   };
   config?: Record<string, unknown>;
 }): Promise<AgiEngagement> {
+  const hardStop =
+    payload.scope.max_session_minutes != null && payload.scope.max_session_minutes > 0
+      ? payload.scope.max_session_minutes
+      : AGI_PILOT.defaultHardStopMinutes;
   if (DEMO_MODE) {
     await delay(350);
     const eng: AgiEngagement = {
       id: Date.now(), organization_id: payload.organization_id, created_by_staff_id: 1,
       name: payload.name, description: payload.description ?? "",
-      scope_definition: { target_allowlist: payload.scope.target_allowlist, forbidden_actions: payload.scope.forbidden_actions, rules_of_engagement: payload.scope.rules_of_engagement ?? "", max_session_minutes: payload.scope.max_session_minutes ?? 120 },
+      scope_definition: { target_allowlist: payload.scope.target_allowlist, forbidden_actions: payload.scope.forbidden_actions, rules_of_engagement: payload.scope.rules_of_engagement ?? "", max_session_minutes: hardStop },
       status: "draft", config: payload.config ?? { prompts: {}, tools: ["httpx", "nmap_safe", "nuclei_safe"], skills: { auto_select: true, auto_select_limit: 6 } },
       created_at: new Date().toISOString(), updated_at: new Date().toISOString(), torn_down_at: null,
     };
@@ -518,7 +534,7 @@ export async function createAgiEngagement(payload: {
       target_allowlist: payload.scope.target_allowlist,
       forbidden_actions: payload.scope.forbidden_actions,
       rules_of_engagement: payload.scope.rules_of_engagement ?? "",
-      max_session_minutes: payload.scope.max_session_minutes,
+      max_session_minutes: hardStop,
       target_environment: payload.scope.target_environment ?? "staging",
       production_ack: payload.scope.target_environment === "production" ? (payload.scope.production_ack ?? false) : false,
       mobile_apk_asset_id: payload.scope.mobile_apk_asset_id,
@@ -535,7 +551,9 @@ export async function patchAgiEngagement(id: number, payload: { name?: string; d
 
 // ── Sessions ──────────────────────────────────────────────────────────────────
 export type AgiSessionStartOpts = {
-  autonomy?: "low" | "medium" | "high";
+  autonomy?: AgiAutonomy | string;
+  /** Lab/eval only — pass true to allow autonomy "high" through the pilot clamp. */
+  allowHighAutonomy?: boolean;
   include_org_assets?: boolean;
   credentials?: { login_url: string; username: string; password: string; label?: string; otp_mode?: string; login_style?: string };
   credential_accounts?: Array<{ login_url: string; username: string; password: string; label?: string; otp_mode?: string; login_style?: string }>;
@@ -563,7 +581,13 @@ export async function startAgiSession(
       started_at: new Date().toISOString(),
       ended_at: null,
       teardown_reason: null,
-      meta: {},
+      meta: {
+        pilot_posture: {
+          enabled: !opts.allowHighAutonomy,
+          autonomy: clampAgiAutonomy(opts.autonomy, { allowHigh: opts.allowHighAutonomy }),
+          hard_stop_minutes: AGI_PILOT.defaultHardStopMinutes,
+        },
+      },
       job: { job_status: "running" },
       loop: { working_on: "Provisioning the isolated workspace.", content: "" },
     });
@@ -575,7 +599,7 @@ export async function startAgiSession(
   }
   const body: Record<string, unknown> = {
     instruction,
-    autonomy: opts.autonomy ?? "medium",
+    autonomy: clampAgiAutonomy(opts.autonomy, { allowHigh: opts.allowHighAutonomy }),
     include_org_assets: opts.include_org_assets ?? true,
   };
   if (opts.credentials) body.credentials = opts.credentials;
