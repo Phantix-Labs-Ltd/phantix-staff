@@ -306,7 +306,7 @@ function Programs({ state }: { state: ReturnType<typeof useResource<Program[]>> 
         <ul className="divide-y divide-slate-700/40">
           {state.data.map((p) => (
             <li key={p.program_key} className="flex flex-wrap items-center gap-3 px-5 py-3">
-              <div className="min-w-0 flex-1">
+              <div className="min-w-[12rem] flex-1">
                 <p className="text-sm text-white">{p.name} <span className="ml-1 font-mono text-[11px] text-slate-500">{p.program_key}</span></p>
                 <p className="text-xs text-slate-500">{p.framework_ids.join(" · ")}</p>
               </div>
@@ -348,7 +348,7 @@ function Intelligence({ clients }: { clients: ClientOrg[] }) {
             <ul className="mt-2 divide-y divide-slate-700/40">
               {risks.map((c) => (
                 <li key={`${c.framework_id}:${c.control_id}`} className="flex flex-wrap items-center gap-3 py-2 text-sm">
-                  <span className="min-w-0 flex-1 font-mono text-slate-200">{c.framework_id} · {c.control_id}</span>
+                  <span className="min-w-[12rem] flex-1 font-mono text-slate-200">{c.framework_id} · {c.control_id}</span>
                   <span className="text-xs text-slate-400">{(c.sources ?? []).join(", ")}</span>
                   {c.correlated && <span className="rounded border border-red-400/40 px-1.5 py-0.5 text-[11px] text-red-300">2+ sources</span>}
                 </li>

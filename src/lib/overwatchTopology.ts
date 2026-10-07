@@ -454,6 +454,15 @@ export const UNITS: TopologyUnit[] = [
     "note": "Every 300s: reaps stalled ai_agent_runs, repo jobs, reports, vapt campaigns, scan_jobs (-> interrupted + resumable, celery revoke SIGTERM), discovery_jobs"
   },
   {
+    "id": "scanner-tools",
+    "label": "scanner tool images (checkov · semgrep · trivy · gitleaks · kube-bench · dockle)",
+    "kind": "runner",
+    "boundary": "core",
+    "replicas": "run-on-demand",
+    "unverified": true,
+    "note": "Foreground `docker run` per tool, invoked from worker-scans (scan packs) and worker-ai (repo analysis code layers). Hardened: --rm, no-new-privileges, 1-2g / 2 cpus, no customer source executed. Only DOCKER_IMAGE_ALLOWLI"
+  },
+  {
     "id": "sandbox-image-oneshot",
     "label": "sandbox-image (one-shot)",
     "kind": "runner",
@@ -911,10 +920,10 @@ export const UNITS: TopologyUnit[] = [
   },
   {
     "id": "e-github",
-    "label": "GitHub App (securegraph-by-phantix-labs)",
+    "label": "GitHub App (phantix-security-solutions)",
     "kind": "observer",
     "boundary": "egress",
-    "note": "GITHUB_APP_ID + private key SET, slug securegraph-by-phantix-labs. Sign-in + asset engine + branch review + autofix PRs."
+    "note": "GITHUB_APP_ID + private key SET, slug phantix-security-solutions. Asset engine + branch review + autofix PRs."
   },
   {
     "id": "e-paystack",
@@ -2360,6 +2369,24 @@ export const EDGES: TopologyEdge[] = [
     "to": "soc-detections",
     "kind": "inproc",
     "label": "compile when present"
+  },
+  {
+    "from": "worker-scans",
+    "to": "scanner-tools",
+    "kind": "exec",
+    "semantics": "compete",
+    "p50": 900,
+    "unverified": true,
+    "label": "allow-listed docker run per tool (cloud/IaC/container packs)"
+  },
+  {
+    "from": "worker-ai",
+    "to": "scanner-tools",
+    "kind": "exec",
+    "semantics": "compete",
+    "p50": 1200,
+    "unverified": true,
+    "label": "code_layers: checkov (IaC/pipeline), semgrep, trivy, gitleak"
   }
 ];
 

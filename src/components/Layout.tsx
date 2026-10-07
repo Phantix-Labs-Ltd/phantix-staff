@@ -16,6 +16,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { AGI_ENABLED } from "@/lib/api";
 import { BrandWordmark } from "@/components/BrandLogo";
 import CommandPalette, { type PaletteItem } from "@/components/CommandPalette";
+import { StaffMoreSheet, StaffTabBar, useStaffTitle } from "@/components/StaffMobileShell";
+import { useTableCards } from "@/lib/useTableCards";
 
 type NavLeafItem = {
   to: string;
@@ -278,6 +280,12 @@ export default function Layout() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // Phones: bottom tab bar + "More" sheet, page title in the app bar, and data
+  // tables rendered as lists.
+  const [moreOpen, setMoreOpen] = useState(false);
+  const closeMore = React.useCallback(() => setMoreOpen(false), []);
+  const [mainEl, setMainEl] = useState<HTMLElement | null>(null);
+  useTableCards(mainEl);
   const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent);
   const shortcutLabel = isMac ? "⌘K" : "Ctrl K";
 
@@ -359,6 +367,7 @@ export default function Layout() {
   // just incidentally) reduced-motion safe at the one call site that animates
   // `height` directly (Hallmark gate 27).
   const reduceMotion = useReducedMotion();
+  const phoneTitle = useStaffTitle(sections);
 
   const handleLogout = () => {
     logout();
@@ -403,9 +412,10 @@ export default function Layout() {
       {/* Main area */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Topbar */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-phantix-700/30 bg-phantix-950/60 backdrop-blur-xl px-4 lg:px-6">
+        <header className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-phantix-700/30 bg-phantix-950/60 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-xl lg:px-6">
+          {/* Phones navigate with the bottom tab bar; the dropdown stays for tablets. */}
           <button
-            className="lg:hidden rounded-lg p-2 text-slate-400 hover:bg-phantix-800/70 hover:text-white"
+            className="hidden rounded-lg p-2 text-slate-400 hover:bg-phantix-800/70 hover:text-white md:block lg:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
@@ -426,10 +436,15 @@ export default function Layout() {
             </kbd>
           </button>
 
+          {/* Phone app bar: the current page. */}
+          <span className="min-w-0 truncate font-display text-[17px] font-bold text-white md:hidden">{phoneTitle}</span>
           <div className="min-w-0 flex-1" />
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <ThemeToggle />
+            {/* Phones: theme and sign-out live in the More sheet. */}
+            <span className="hidden md:contents">
+              <ThemeToggle />
+            </span>
             <span className={cx("chip hidden capitalize sm:inline-flex", roleBadge)}>
               {session?.role || "staff"}
             </span>
@@ -438,8 +453,16 @@ export default function Layout() {
               {session?.email && <p className="text-xs text-slate-500">{session.email}</p>}
             </div>
             <button
+              type="button"
+              onClick={() => setMoreOpen(true)}
+              aria-label="Account"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-gold-400/40 bg-phantix-850 font-display text-sm font-bold text-gold-300 md:hidden"
+            >
+              {(session?.fullName || session?.email || "S").slice(0, 1).toUpperCase()}
+            </button>
+            <button
               onClick={handleLogout}
-              className="rounded-lg p-2 text-slate-400 hover:bg-phantix-800/70 hover:text-severity-critical transition-colors"
+              className="hidden rounded-lg p-2 text-slate-400 transition-colors hover:bg-phantix-800/70 hover:text-severity-critical md:block"
               title="Logout"
             >
               <LogOut size={18} />
@@ -449,12 +472,20 @@ export default function Layout() {
 
         {/* Mobile menu */}
         {menuOpen && (
+          <div
+            className="fixed inset-x-0 bottom-0 top-16 z-40 hidden bg-black/75 backdrop-blur-sm md:block lg:hidden"
+            onClick={() => setMenuOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+        {menuOpen && (
+          // Tablets only: an opaque, raised panel over the dimmed page.
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-0 top-16 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-phantix-700/30 bg-phantix-950/98 shadow-card lg:hidden"
+            className="fixed inset-x-0 top-16 z-50 hidden max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-phantix-600/60 bg-[rgb(var(--surface-card))] shadow-2xl md:block lg:hidden"
           >
             <nav className="px-4 py-4 space-y-1.5">
               {renderNav(true)}
@@ -463,7 +494,7 @@ export default function Layout() {
         )}
 
         {/* Page content */}
-        <main className="min-w-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
+        <main ref={setMainEl} className="min-w-0 flex-1 overflow-y-auto p-3 pb-[calc(88px+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(88px+env(safe-area-inset-bottom))] md:pb-4 lg:p-6">
           {/* The one content measure for this app: 7xl left wide staff tables
               cramped while their rows scrolled off the bottom. */}
           <div className="mx-auto w-full max-w-[1600px]">
@@ -471,11 +502,33 @@ export default function Layout() {
           </div>
         </main>
 
-        <footer className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-phantix-700/60 bg-phantix-950/60 px-4 py-3 text-[13px] text-slate-400 lg:px-6">
+        <footer className="hidden shrink-0 flex-wrap items-center justify-between gap-2 border-t border-phantix-700/60 bg-phantix-950/60 px-4 py-3 text-[13px] text-slate-400 md:flex lg:px-6">
           <span>SecureGraph Staff Portal · internal admin &amp; support console · every action is audited</span>
           <span className="font-mono">API v1 · staff-only</span>
         </footer>
       </div>
+
+      {/* Phone shell */}
+      <StaffTabBar nav={sections} moreOpen={moreOpen} onMore={() => setMoreOpen((v) => !v)} />
+      <StaffMoreSheet
+        open={moreOpen}
+        onClose={closeMore}
+        nav={sections}
+        appUrl={APP_URL}
+        onSignOut={handleLogout}
+        account={
+          <div className="flex items-center gap-3 rounded-2xl border border-phantix-700/50 bg-phantix-900/60 p-3.5">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-gold-400/40 bg-phantix-850 font-display text-base font-bold text-gold-300">
+              {(session?.fullName || session?.email || "S").slice(0, 1).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-slate-100">{session?.fullName || session?.email || "Staff"}</p>
+              {session?.email && <p className="truncate text-xs text-slate-500">{session.email}</p>}
+            </div>
+            <span className={cx("chip shrink-0 capitalize", roleBadge)}>{session?.role || "staff"}</span>
+          </div>
+        }
+      />
 
       <CommandPalette
         open={paletteOpen}

@@ -175,12 +175,12 @@ export default function Overwatch() {
             fullscreen && "fixed inset-0 z-[70] min-h-0 rounded-none border-0 bg-phantix-950",
           )}
         >
-          <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 px-3 py-2">
+            <div className="flex min-w-[12rem] flex-1 items-center gap-2 text-xs text-slate-400">
               <Activity size={13} className="text-emerald-400" />
               every deployed unit · boundaries are deployment units, not layout
             </div>
-            <div className="flex items-center gap-3 text-[11px] text-slate-500">
+            <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
               {(["active", "busy", "warn", "error", "dark", "idle"] as NodeLevel[]).map((l) => (
                 <span key={l} className="inline-flex items-center gap-1">
                   <i className="inline-block h-2 w-2 rounded-sm" style={{ background: LEVEL_COLOR[l] }} />

@@ -1113,7 +1113,7 @@ function FindingsPanel({ sessionId }: { sessionId: number }) {
             {(f.highlight || f.report_highlight) && (
               <span className="chip border-severity-critical/30 bg-severity-critical/10 text-[12px] text-severity-critical">highlight</span>
             )}
-            <span className="min-w-0 flex-1 break-words text-sm font-semibold text-slate-100">{f.title}</span>
+            <span className="min-w-[12rem] flex-1 break-words text-sm font-semibold text-slate-100">{f.title}</span>
             <span className="chip text-[12px] text-slate-500">{f.tool ?? f.source}</span>
             {f.risk_id && <span className="chip border-emerald-400/30 bg-emerald-400/10 text-[12px] text-emerald-300">risk #{f.risk_id}</span>}
           </div>
@@ -2014,7 +2014,7 @@ export default function AgiAdmin() {
                 return (
                   <div key={s.id} className="flex flex-wrap items-center gap-3 rounded-md border border-phantix-700/40 bg-phantix-900/40 p-4">
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-phantix-800/70 text-slate-300">{s.full_name?.slice(0, 1) ?? "?"}</span>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-[12rem] flex-1">
                       <p className="text-sm font-semibold text-slate-100">{s.full_name || s.email}</p>
                       <p className="text-xs text-slate-500">{s.email} · <span className="capitalize">{s.role}</span>{!s.is_active && <span className="text-severity-critical"> · inactive</span>}</p>
                     </div>

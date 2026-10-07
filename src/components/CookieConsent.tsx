@@ -22,7 +22,7 @@ export default function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Analytics consent"
-      className="fixed inset-x-0 bottom-0 z-[70] border-t border-phantix-700/60 bg-phantix-900/95 px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur"
+      className="fixed inset-x-0 bottom-[calc(64px+env(safe-area-inset-bottom))] z-[70] md:bottom-0 border-t border-phantix-700/60 bg-phantix-900/95 px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur"
     >
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 sm:flex-row sm:items-center">
         <div className="flex items-start gap-2.5 sm:contents">
