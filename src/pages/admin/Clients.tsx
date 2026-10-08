@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Building2, Search, Eye, Mail, Globe, CheckCircle2, XCircle, AlertTriangle, RefreshCw, Shield, ExternalLink, Settings } from "lucide-react";
 import { PageHeader, Card, StatusBadge, TableSkeleton, EmptyState, Modal } from "@/components/ui";
+import { Pagination, usePaged } from "@/components/Pagination";
 import { useResource } from "@/lib/useResource";
 import { useStore } from "@/lib/store";
 import { api, DEMO_MODE } from "@/lib/api";
@@ -51,6 +52,11 @@ interface EntitlementOverrides {
 export default function Clients() {
   const { toast, isAdmin, isSuperadmin } = useStore();
   const [search, setSearch] = useState("");
+  // Server-side sort: "<key>:<dir>". Keys: created_at | plan | last_active | name | status
+  const [sort, setSort] = useState("created_at:desc");
+  const [sortKey, sortDir] = sort.split(":");
+  const [planFilter, setPlanFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [suspendNote, setSuspendNote] = useState("");
   const [editingClient, setEditingClient] = useState<ClientOrg | null>(null);
@@ -69,12 +75,31 @@ export default function Clients() {
   const clients = useResource<ClientOrg[]>(
     async (signal) => {
       if (DEMO_MODE) return demoClients;
-      const raw = await api.get<any>("/admin/clients");
-      const items = Array.isArray(raw) ? raw : (raw?.items ?? []);
-      return items as ClientOrg[];
+      // The list endpoint returns at most 200 rows per call and no total, so
+      // read every page in the chosen order, then page through it here.
+      const PAGE = 200;
+      const all: ClientOrg[] = [];
+      for (let offset = 0; offset < 50 * PAGE; offset += PAGE) {
+        const raw = await api.get<any>(`/admin/clients?sort=${sortKey}&order=${sortDir}&limit=${PAGE}&offset=${offset}`);
+        const batch = (Array.isArray(raw) ? raw : (raw?.items ?? [])) as ClientOrg[];
+        all.push(...batch);
+        if (batch.length < PAGE) break;
+      }
+      return all;
     },
     [],
   );
+
+  // Re-query when the sort changes (keeps server-side ordering + paging correct).
+  const firstSortRef = useRef(true);
+  useEffect(() => {
+    if (firstSortRef.current) {
+      firstSortRef.current = false;
+      return;
+    }
+    clients.refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort]);
 
   const clientConnections = useResource<ClientConnections>(
     async (signal) => {
@@ -243,11 +268,19 @@ export default function Clients() {
 
   const data = clients.data;
 
-  const filtered = (data || (DEMO_MODE ? demoClients : [])).filter((c) => {
+  const allClients = data || (DEMO_MODE ? demoClients : []);
+  const plans = Array.from(new Set(allClients.map((c) => (c.plan || "free").toLowerCase())));
+  const filtered = allClients.filter((c) => {
+    if (planFilter && (c.plan || "free").toLowerCase() !== planFilter) return false;
+    if (statusFilter === "active" && !c.is_active) return false;
+    if (statusFilter === "suspended" && c.is_active) return false;
+    if (statusFilter === "unverified" && c.company_verified) return false;
+    if (statusFilter === "setup_pending" && c.setup_complete) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     return c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q);
   });
+  const { pageItems, pagination } = usePaged(filtered, "staff_clients", { search, planFilter, statusFilter, sort });
 
   const handleManualReview = async (id: number, approve: boolean) => {
     try {
@@ -271,9 +304,39 @@ export default function Clients() {
         }
       />
 
-      <div className="relative mb-4 max-w-xs">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input className="input pl-9 py-2 text-sm" placeholder="Search by name, email, or slug..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative min-w-[220px] max-w-xs flex-1">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input className="input pl-9 py-2 text-sm" placeholder="Search by name, email, or slug..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <select
+          className="input w-auto py-2 text-sm"
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          title="Sort clients"
+          aria-label="Sort clients"
+        >
+          <option value="created_at:desc">Newest first</option>
+          <option value="created_at:asc">Oldest first</option>
+          <option value="plan:asc">Plan: Free → Enterprise</option>
+          <option value="plan:desc">Plan: Enterprise → Free</option>
+          <option value="last_active:desc">Last active</option>
+          <option value="name:asc">Name (A–Z)</option>
+          <option value="status:desc">Status (active first)</option>
+        </select>
+        <select className="input w-auto py-2 text-sm capitalize" value={planFilter} onChange={(e) => setPlanFilter(e.target.value)} aria-label="Filter by plan">
+          <option value="">All plans</option>
+          {["free", "starter", "growth", "enterprise", ...plans.filter((p) => !["free", "starter", "growth", "enterprise"].includes(p))].map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
+        <select className="input w-auto py-2 text-sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filter by status">
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="suspended">Suspended</option>
+          <option value="unverified">Company not verified</option>
+          <option value="setup_pending">Setup not finished</option>
+        </select>
       </div>
 
       <Card>
@@ -287,16 +350,29 @@ export default function Clients() {
               <thead>
                 <tr className="border-b border-phantix-700/40">
                   <th className="th">Organization</th>
-                  <th className="th">Plan</th>
+                  <th className="th">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 hover:text-slate-200"
+                      onClick={() => setSort(sortKey === "plan" && sortDir === "asc" ? "plan:desc" : "plan:asc")}
+                      title="Sort by plan"
+                    >
+                      Plan
+                      <span className="text-[14px]">{sortKey === "plan" ? (sortDir === "asc" ? "▲" : "▼") : "↕"}</span>
+                    </button>
+                  </th>
                   <th className="th">Setup</th>
                   <th className="th">Verified</th>
                   <th className="th">Status</th>
+                  <th className="th text-right">Connections</th>
+                  <th className="th text-right">Open tickets</th>
                   <th className="th">Last Active</th>
+                  <th className="th">Joined</th>
                   <th className="th w-12" />
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((client) => (
+                {pageItems.map((client) => (
                   <tr key={client.id} className="border-b border-phantix-700/20 hover:bg-phantix-800/40 transition-colors">
                     <td className="td">
                       <div className="flex max-w-[30rem] min-w-0 items-center gap-2" title={`${client.email} · ${client.slug} · ${client.country}`}>
@@ -311,11 +387,22 @@ export default function Clients() {
                         )}
                       </div>
                     </td>
-                    <td className="td"><span className="text-xs text-slate-300">{client.plan}</span></td>
+                    <td className="td"><span className="text-xs capitalize text-slate-300">{client.plan || "free"}</span></td>
                     <td className="td">{client.setup_complete ? <CheckCircle2 size={14} className="text-emerald-400" /> : <XCircle size={14} className="text-slate-500" />}</td>
-                    <td className="td">{client.company_verified ? <span className="chip text-xs text-emerald-400 bg-emerald-400/10 border-emerald-400/30">Verified</span> : <span className="chip text-xs text-severity-medium bg-severity-medium/10 border-severity-medium/30">Pending</span>}</td>
+                    <td className="td">
+                      {client.company_verified ? (
+                        <span className="chip text-xs text-emerald-400 bg-emerald-400/10 border-emerald-400/30">Verified</span>
+                      ) : client.identity_verified ? (
+                        <span className="chip text-xs text-phantix-300 bg-phantix-500/10 border-phantix-500/30">Email only</span>
+                      ) : (
+                        <span className="chip text-xs text-severity-medium bg-severity-medium/10 border-severity-medium/30">Pending</span>
+                      )}
+                    </td>
                     <td className="td">{client.is_active ? <StatusBadge status="active" /> : <StatusBadge status="failed" />}</td>
-                    <td className="td text-xs text-slate-500">{timeAgo(client.last_active_at)}</td>
+                    <td className="td text-right font-mono text-xs text-slate-300">{client.connection_count ?? 0}</td>
+                    <td className={cx("td text-right font-mono text-xs", (client.open_ticket_count ?? 0) > 0 ? "text-severity-medium" : "text-slate-500")}>{client.open_ticket_count ?? 0}</td>
+                    <td className="td text-xs text-slate-500">{client.last_active_at ? timeAgo(client.last_active_at) : "Never"}</td>
+                    <td className="td text-xs text-slate-500" title={client.created_at}>{client.created_at ? new Date(client.created_at).toLocaleDateString() : ""}</td>
                     <td className="td">
                       <button
                         className="btn-ghost p-1.5"
@@ -331,6 +418,7 @@ export default function Clients() {
             </table>
           </div>
         )}
+        {filtered.length > 0 && <Pagination {...pagination} itemLabel="clients" keyboard />}
       </Card>
 
       {/* Client Detail Modal */}
