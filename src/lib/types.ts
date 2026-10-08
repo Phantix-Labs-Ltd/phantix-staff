@@ -67,6 +67,12 @@ export interface ClientOrg {
   last_active_at: string | null;
   notes: string | null;
   flags: string[];
+  secondary_email?: string | null;
+  preferred_services?: string[] | null;
+  admin_tags?: string[] | null;
+  connection_count?: number;
+  open_ticket_count?: number;
+  updated_at?: string;
 }
 
 export interface ClientConnections {
