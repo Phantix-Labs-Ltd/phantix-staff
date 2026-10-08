@@ -75,12 +75,14 @@ export function Card({ children, className, hover, pad = "md" }: { children: Rea
 
 export function CardHeader({ title, subtitle, action }: { title: React.ReactNode; subtitle?: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="mb-3 flex items-start justify-between gap-4">
-      <div className="min-w-0 flex-1">
+    // Wraps on phones: a wide action (a search box) drops below the title
+    // instead of crushing it.
+    <div className="mb-3 flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+      <div className="min-w-[12rem] flex-1">
         <h3 className="font-display text-[15px] font-semibold text-slate-100 break-words">{title}</h3>
         {subtitle && <p className="mt-0.5 text-xs text-slate-400 break-words">{subtitle}</p>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="max-w-full shrink-0">{action}</div>}
     </div>
   );
 }
@@ -141,7 +143,7 @@ export function CollapsibleCard({
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-      <div className="min-w-0 flex-1 basis-[16rem]">
+      <div className="min-w-[12rem] flex-1 basis-[16rem]">
         <h1 className="font-display text-[24px] font-bold leading-tight tracking-tight text-white">{title}</h1>
         {description && <p className="mt-1 max-w-3xl text-sm text-slate-400">{description}</p>}
       </div>
@@ -158,14 +160,15 @@ export function StatCard({ label, value, icon, trend, trendLabel, className }: {
         <div className="min-w-0">
           <p className="truncate text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">{label}</p>
           <div className="font-display text-[22px] font-bold leading-tight text-white">{value}</div>
-          {trendLabel && (
-            <p className={cx("text-xs mt-1", trend === "up" ? "text-severity-critical" : trend === "down" ? "text-emerald-400" : "text-slate-400")}>
-              {trend === "up" ? "↑" : trend === "down" ? "↓" : "---"} {trendLabel}
-            </p>
-          )}
         </div>
         {icon && <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-phantix-800/70 text-phantix-300 [&_svg]:h-4 [&_svg]:w-4">{icon}</div>}
       </div>
+      {/* Full card width: beside the icon it was a one-word column on phones. */}
+      {trendLabel && (
+        <p className={cx("text-xs mt-1", trend === "up" ? "text-severity-critical" : trend === "down" ? "text-emerald-400" : "text-slate-400")}>
+          {trend === "up" ? "↑" : trend === "down" ? "↓" : "---"} {trendLabel}
+        </p>
+      )}
     </div>
   );
 }
@@ -199,13 +202,13 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
   return (
     <AnimatePresence>
       {open && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[90] flex items-start justify-center bg-phantix-950/80 backdrop-blur-sm p-4 pt-12 overflow-y-auto" onClick={onClose}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[90] flex items-end justify-center overflow-y-auto bg-phantix-950/80 backdrop-blur-sm sm:items-start sm:p-4 sm:pt-12" onClick={onClose}>
           <motion.div
             initial={{ opacity: 0, y: 24, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className={cx("glass-bright w-full rounded-2xl shadow-card mb-12", wide ? "max-w-4xl" : "max-w-lg")}
+            className={cx("glass-bright w-full rounded-t-2xl shadow-card sm:mb-12 sm:rounded-2xl", wide ? "sm:max-w-4xl" : "sm:max-w-lg")}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-phantix-700/40 px-4 py-3 sm:px-6 sm:py-4">
@@ -214,7 +217,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
                 <X size={16} />
               </button>
             </div>
-            <div className="max-h-[68vh] overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">{children}</div>
+            <div className="max-h-[80dvh] overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:max-h-[68vh] sm:px-6 sm:py-5">{children}</div>
           </motion.div>
         </motion.div>
       )}
