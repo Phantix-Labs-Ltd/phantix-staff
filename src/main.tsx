@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { MotionConfig } from "framer-motion";
 import App from "./App";
+import PageErrorBoundary from "./components/PageErrorBoundary";
 import { bootstrapTheme } from "./lib/theme";
 // Geist + Geist Mono (Xalgorix-style typography) — variable woff2, loaded first
 // so the app never flashes a fallback face.
@@ -25,7 +26,10 @@ if (!rootEl) {
           asked the OS for calmer motion; quick opacity fades still carry the
           reveal so content never snaps in (Learn UI — reduced motion). */}
       <MotionConfig reducedMotion="user">
-        <App />
+        {/* Last line of defence: nothing renders a blank screen. */}
+        <PageErrorBoundary fullScreen>
+          <App />
+        </PageErrorBoundary>
       </MotionConfig>
     </React.StrictMode>,
   );
