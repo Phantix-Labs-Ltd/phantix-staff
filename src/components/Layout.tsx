@@ -8,7 +8,7 @@ import {
   Zap, Globe, AlertTriangle, ScanLine, BarChart3, RefreshCw,
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
   ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronDown, Newspaper,
-  BellRing,
+  BellRing, ListOrdered,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { APP_URL } from "@/lib/links";
@@ -55,6 +55,7 @@ const navSections: NavGroupDef[] = [
       { to: "/search", label: "Search", icon: <Search size={18} /> },
       { to: "/clients", label: "Clients", icon: <Building2 size={18} />, adminOnly: true },
       { to: "/sandbox", label: "Sandbox", icon: <FlaskConical size={18} />, adminOnly: true },
+      { to: "/waitlist", label: "Waitlist", icon: <ListOrdered size={18} />, adminOnly: true },
       { to: "/support", label: "Support", icon: <MessageSquare size={18} /> },
     ],
   },

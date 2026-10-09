@@ -302,6 +302,23 @@ export default function SandboxAdmin() {
     }
   };
 
+  /** The cohort's lifecycle. For the beta cohort it also sets registration:
+   *  active = opt-in registration until the target finish setup, paused =
+   *  registration closed, concluded = registration open to everyone. */
+  const saveStatus = async (status: "active" | "paused" | "concluded") => {
+    if (DEMO_MODE || !programId) return;
+    setBusy(true);
+    try {
+      await api.patch(`/admin/sandbox/programs/${programId}`, { status });
+      toast("success", `Cohort ${status}`);
+      await refresh(programId, true);
+    } catch (e) {
+      toast("error", "Could not save", e instanceof Error ? e.message : "");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const saveAutoEnroll = async (count: number) => {
     if (DEMO_MODE || !programId) return;
     setBusy(true);
@@ -446,6 +463,38 @@ export default function SandboxAdmin() {
               <p className="mt-1 font-display text-xl font-bold text-white">{board.ratingCount ?? ratings.length}</p>
             </Card>
           </div>
+
+          <Card className="mb-5 !p-4">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-100">
+                  Cohort status: <span className="capitalize text-gold-300">{board.program.status ?? "active"}</span>
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {board.program.slug === "beta"
+                    ? board.program.status === "concluded"
+                      ? "Beta over: registration is open to everyone, with no sandbox opt-in."
+                      : board.program.status === "paused"
+                        ? "Registration is closed until you make the cohort active again or conclude it."
+                        : "Beta: registering requires the sandbox opt-in, and closes once the target number of organizations finish setup. Conclude the cohort to open registration to everyone."
+                    : "Paused or concluded cohorts take no new members."}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-end gap-2">
+                {(["active", "paused", "concluded"] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className={board.program.status === s ? "btn-primary !text-xs" : "btn-ghost !text-xs"}
+                    disabled={busy || board.program.status === s}
+                    onClick={() => void saveStatus(s)}
+                  >
+                    {s === "active" ? "Make active" : s === "paused" ? "Pause" : "Conclude"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </Card>
 
           <Card className="mb-5 !p-4">
             <div className="flex flex-wrap items-end justify-between gap-3">
