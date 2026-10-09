@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import PageErrorBoundary from "@/components/PageErrorBoundary";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   LayoutDashboard, Shield, Building2, MessageSquare, MessageSquareWarning, Server, Brain,
@@ -498,7 +499,10 @@ export default function Layout() {
           {/* The one content measure for this app: 7xl left wide staff tables
               cramped while their rows scrolled off the bottom. */}
           <div className="mx-auto w-full max-w-[1600px]">
-            <Outlet />
+            {/* A page that crashes shows a recovery card; the chrome stays. */}
+            <PageErrorBoundary resetKey={location.pathname}>
+              <Outlet />
+            </PageErrorBoundary>
           </div>
         </main>
 
