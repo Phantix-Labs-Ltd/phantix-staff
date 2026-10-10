@@ -33,6 +33,8 @@ import { Maximize2, Minimize2, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { EDGE_COLOR, KIND_COLOR } from "@/lib/overwatchTopology";
 import { computeLayout, fitText, GROUP_LABEL, textWidth, wrapLabel } from "@/lib/overwatchLayout";
 import { LEVEL_COLOR, type NodeState } from "@/lib/overwatchMap";
+import type { LiveFlow } from "@/lib/overwatchLive";
+import OverwatchLiveLayer from "./OverwatchLiveLayer";
 import { cx } from "@/lib/utils";
 
 interface Props {
@@ -44,6 +46,8 @@ interface Props {
   className?: string;
   fullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  /** Live mode: flows to animate along the wires, one call per flow. */
+  live?: (fn: (flow: LiveFlow) => void) => () => void;
 }
 
 const NAME_SIZE = 11;
@@ -69,6 +73,7 @@ export default function OverwatchMap({
   className,
   fullscreen,
   onToggleFullscreen,
+  live,
 }: Props) {
   const layout = useMemo(() => computeLayout(), []);
   const hot = useMemo(() => new Set(highlight), [highlight]);
@@ -430,6 +435,9 @@ export default function OverwatchMap({
             </g>
           );
         })}
+
+        {/* live mode: traffic moving across the wires, above the units */}
+        {live && <OverwatchLiveLayer layout={layout} subscribe={live} zoom={view.z} />}
       </svg>
 
       {/* controls — stop propagation so pressing them never starts a pan */}
@@ -463,6 +471,7 @@ export default function OverwatchMap({
 
       <div className="pointer-events-none absolute bottom-2 left-3 text-[10px] text-slate-600">
         drag to pan · scroll to zoom · hover a card or boundary to trace what it touches
+        {live ? " · live: each dot is one request, event or task in motion" : ""}
       </div>
     </div>
   );

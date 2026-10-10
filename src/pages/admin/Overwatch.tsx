@@ -21,6 +21,7 @@ import {
   ListTree,
   Pause,
   Play,
+  Radio,
   RefreshCw,
   Server,
   Wifi,
@@ -31,6 +32,14 @@ import OverwatchMap from "@/components/OverwatchMap";
 import { Card, CardHeader, EmptyState, PageHeader, StatCard, StatusBadge } from "@/components/ui";
 import { useEventTail, useOverwatch, type Ranked } from "@/lib/overwatch";
 import { LEVEL_COLOR, nodeStates, type NodeLevel, type NodeState } from "@/lib/overwatchMap";
+import {
+  FLOW_COLOR,
+  FLOW_LABEL,
+  nodeName,
+  useLiveFlows,
+  type FlowKind,
+  type LiveFlow,
+} from "@/lib/overwatchLive";
 import { UNITS } from "@/lib/overwatchTopology";
 import { cx } from "@/lib/utils";
 
@@ -55,8 +64,43 @@ const SIGNAL_COLOR: Record<Ranked["signal"], string> = {
   load: "#38bdf8",
 };
 
+const FLOW_KINDS: FlowKind[] = ["request", "event", "task", "pickup", "error"];
+
+/** One movement in the live feed: when, what kind, from → to, and the label. */
+function FlowRow({ flow, compact = false }: { flow: LiveFlow; compact?: boolean }) {
+  const failed = flow.kind === "error" || (flow.status ?? 0) >= 500;
+  return (
+    <li className={cx("flex items-start gap-2 px-3 py-1.5", compact ? "text-[11px]" : "text-xs")}>
+      <span className="mt-0.5 shrink-0 font-mono text-[10px] text-slate-600">
+        {new Date(flow.t).toLocaleTimeString([], { hour12: false })}
+      </span>
+      <i className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: FLOW_COLOR[flow.kind] }} />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-slate-300">
+          {flow.src === flow.dst ? (
+            nodeName(flow.from, flow.src)
+          ) : (
+            <>
+              {nodeName(flow.from, flow.src)} <span className="text-slate-600">→</span> {nodeName(flow.to, flow.dst)}
+            </>
+          )}
+        </div>
+        {flow.label && <div className="truncate font-mono text-[10.5px] text-slate-500">{flow.label}</div>}
+      </div>
+      {(flow.status !== undefined || flow.ms !== undefined) && (
+        <span className={cx("shrink-0 font-mono text-[10px]", failed ? "text-severity-critical" : "text-slate-500")}>
+          {flow.status ?? ""}
+          {flow.ms !== undefined ? ` · ${Math.round(flow.ms)}ms` : ""}
+        </span>
+      )}
+    </li>
+  );
+}
+
 export default function Overwatch() {
   const [paused, setPaused] = useState(false);
+  // Live mode: traffic moving across the backend, animated on the map.
+  const [liveMode, setLiveMode] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -71,6 +115,8 @@ export default function Overwatch() {
   }, [fullscreen]);
   const { snapshot, ranked, samples, error, lastAt, refresh } = useOverwatch(15000, !paused);
   const { lines, connected } = useEventTail(!paused);
+  const liveFeed = useLiveFlows(liveMode && !paused);
+  const liveRate = FLOW_KINDS.reduce((a, k) => a + liveFeed.rates[k], 0);
 
   const states = useMemo(
     () => (snapshot ? nodeStates(snapshot) : new Map<string, NodeState>()),
@@ -177,20 +223,60 @@ export default function Overwatch() {
         >
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 px-3 py-2">
             <div className="flex min-w-[12rem] flex-1 items-center gap-2 text-xs text-slate-400">
-              <Activity size={13} className="text-emerald-400" />
-              every deployed unit · boundaries are deployment units, not layout
+              <button
+                type="button"
+                onClick={() => setLiveMode((m) => !m)}
+                aria-pressed={liveMode}
+                title={liveMode ? "Stop live mode" : "Watch requests, events and tasks move across the backend"}
+                className={cx(
+                  "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors",
+                  liveMode
+                    ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-300"
+                    : "border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200",
+                )}
+              >
+                <Radio size={12} className={cx(liveMode && liveFeed.connected && !paused && "animate-pulse")} />
+                {liveMode ? (paused ? "live · paused" : liveFeed.connected ? "live" : "connecting…") : "go live"}
+              </button>
+              {liveMode ? (
+                <span className="text-slate-500">
+                  {liveFeed.connected ? `${liveRate.toFixed(1)} flows/s` : "waiting for the stream"}
+                </span>
+              ) : (
+                <>
+                  <Activity size={13} className="text-emerald-400" />
+                  every deployed unit · boundaries are deployment units, not layout
+                </>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
-              {(["active", "busy", "warn", "error", "dark", "idle"] as NodeLevel[]).map((l) => (
-                <span key={l} className="inline-flex items-center gap-1">
-                  <i className="inline-block h-2 w-2 rounded-sm" style={{ background: LEVEL_COLOR[l] }} />
-                  {l}
-                  {live[l] > 0 && <b className="text-slate-300">{live[l]}</b>}
-                </span>
-              ))}
+              {liveMode
+                ? FLOW_KINDS.map((k) => (
+                    <span key={k} className="inline-flex items-center gap-1">
+                      <i className="inline-block h-2 w-2 rounded-full" style={{ background: FLOW_COLOR[k] }} />
+                      {FLOW_LABEL[k]}
+                      {liveFeed.rates[k] > 0 && <b className="text-slate-300">{liveFeed.rates[k]}/s</b>}
+                    </span>
+                  ))
+                : (["active", "busy", "warn", "error", "dark", "idle"] as NodeLevel[]).map((l) => (
+                    <span key={l} className="inline-flex items-center gap-1">
+                      <i className="inline-block h-2 w-2 rounded-sm" style={{ background: LEVEL_COLOR[l] }} />
+                      {l}
+                      {live[l] > 0 && <b className="text-slate-300">{live[l]}</b>}
+                    </span>
+                  ))}
             </div>
           </div>
-          <div className="min-h-0 flex-1">
+          <div className="relative min-h-0 flex-1">
+            {fullscreen && liveMode && liveFeed.feed.length > 0 && (
+              <div className="pointer-events-none absolute bottom-8 left-3 z-10 w-[360px] max-w-[45%] rounded-lg border border-white/10 bg-phantix-950/85 py-1 backdrop-blur">
+                <ul>
+                  {liveFeed.feed.slice(0, 8).map((f) => (
+                    <FlowRow key={f.seq} flow={f} compact />
+                  ))}
+                </ul>
+              </div>
+            )}
             {snapshot ? (
               <OverwatchMap
                 states={states}
@@ -199,6 +285,7 @@ export default function Overwatch() {
                 onSelect={setSelected}
                 fullscreen={fullscreen}
                 onToggleFullscreen={() => setFullscreen((f) => !f)}
+                live={liveMode ? liveFeed.subscribe : undefined}
               />
             ) : (
               <EmptyState
@@ -212,6 +299,30 @@ export default function Overwatch() {
 
         {!fullscreen && (
         <div className="flex min-h-0 flex-col gap-4 overflow-y-auto pr-1">
+          {liveMode && (
+            <Card className="!p-0">
+              <CardHeader
+                title="Live flows"
+                subtitle="each movement as it happens: kind, from → to, route template or event. No tenant data, nothing stored."
+              />
+              {liveFeed.feed.length === 0 ? (
+                <p className="px-4 pb-4 text-sm text-slate-500">
+                  {paused
+                    ? "Paused. Resume to see traffic."
+                    : liveFeed.connected
+                      ? "Connected. Waiting for traffic…"
+                      : "Connecting to the live stream…"}
+                </p>
+              ) : (
+                <ul className="max-h-[340px] divide-y divide-white/5 overflow-y-auto pb-1">
+                  {liveFeed.feed.slice(0, 40).map((f) => (
+                    <FlowRow key={f.seq} flow={f} />
+                  ))}
+                </ul>
+              )}
+            </Card>
+          )}
+
           {/* ── where to look first */}
           <Card>
             <CardHeader
