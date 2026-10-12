@@ -102,14 +102,17 @@ function start(): void {
 }
 
 /**
- * Install the tracker only when the user has already accepted analytics.
- * Nothing is sent before consent; the banner calls `onConsentAccepted`.
+ * On page load: count straight away only when analytics was accepted (on the
+ * landing site; the choice is shared across every Phantix site).
  */
 export function initAnalytics(): void {
   if (getConsent() === "accepted") start();
 }
 
-/** Called by the consent banner when the user accepts. */
-export function onConsentAccepted(): void {
-  start();
+/**
+ * Called once a user is signed in. Signed-in users accepted the Terms of
+ * Service, so there is no consent banner here; an explicit decline still wins.
+ */
+export function onSignedIn(): void {
+  if (getConsent() !== "declined") start();
 }

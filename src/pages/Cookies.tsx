@@ -1,15 +1,17 @@
 import React from "react";
 import { Cookie, RefreshCw, ShieldCheck } from "lucide-react";
 import { PageHeader, Card, CardHeader } from "@/components/ui";
-import { clearConsent, getConsent } from "@/lib/consent";
+import { getConsent, setConsent } from "@/lib/consent";
 
 // ── Cookies and analytics policy (staff portal, public) ─────────────────────────
 
 export default function Cookies() {
   const consent = getConsent();
 
-  const reset = () => {
-    clearConsent();
+  // The portal shows no consent banner (staff are signed in), so the choice is
+  // made here directly.
+  const choose = (choice: "accepted" | "declined") => {
+    setConsent(choice);
     window.location.reload();
   };
 
@@ -37,12 +39,13 @@ export default function Cookies() {
         <Card>
           <CardHeader
             title="Your choice"
-            subtitle="Analytics runs only after you accept"
+            subtitle="On while you are signed in, unless you turn it off"
             action={<ShieldCheck size={16} className="text-emerald-300" />}
           />
           <p className="text-sm leading-6 text-slate-300">
-            You can accept or decline analytics at any time. Declining stops all beacons; nothing else in the
-            portal is affected.
+            The portal doesn't show a consent banner: page views are counted while you are signed in. You
+            can turn analytics off at any time; that stops all beacons and nothing else in the portal is
+            affected.
           </p>
           <p className="mt-2 text-xs text-slate-500">
             Current choice:{" "}
@@ -50,8 +53,8 @@ export default function Cookies() {
               {consent === "accepted" ? "Accepted" : consent === "declined" ? "Declined" : "Not set"}
             </strong>
           </p>
-          <button className="btn-secondary mt-4 text-xs" onClick={reset}>
-            <RefreshCw size={13} className="mr-1.5 inline" /> Change my choice
+          <button className="btn-secondary mt-4 text-xs" onClick={() => choose(consent === "declined" ? "accepted" : "declined")}>
+            <RefreshCw size={13} className="mr-1.5 inline" /> {consent === "declined" ? "Turn analytics on" : "Turn analytics off"}
           </button>
         </Card>
 

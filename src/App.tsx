@@ -7,7 +7,6 @@ import StaffPasswordResetRequest from "@/pages/StaffPasswordResetRequest";
 import StaffPasswordResetComplete from "@/pages/StaffPasswordResetComplete";
 import StaffChangePassword from "@/pages/StaffChangePassword";
 import Cookies from "@/pages/Cookies";
-import CookieConsent from "@/components/CookieConsent";
 import { BrandLoader } from "@/components/BrandLoader";
 import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/admin/Clients";
@@ -191,7 +190,6 @@ export default function App() {
           </Route>
         </Routes>
         <ToastViewport />
-        <CookieConsent />
       </BrowserRouter>
     </StoreProvider>
   );
