@@ -19,6 +19,7 @@ import { BrandWordmark } from "@/components/BrandLogo";
 import CommandPalette, { type PaletteItem } from "@/components/CommandPalette";
 import { StaffMoreSheet, StaffTabBar, useStaffTitle } from "@/components/StaffMobileShell";
 import { useTableCards } from "@/lib/useTableCards";
+import { onSignedIn } from "@/lib/analytics";
 
 type NavLeafItem = {
   to: string;
@@ -290,6 +291,11 @@ export default function Layout() {
   useTableCards(mainEl);
   const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent);
   const shortcutLabel = isMac ? "⌘K" : "Ctrl K";
+
+  // Staff are signed in, so the portal asks no cookie question.
+  useEffect(() => {
+    if (session?.authenticated) onSignedIn();
+  }, [session?.authenticated]);
 
   // Ctrl/⌘+K anywhere opens the palette — the nav is too deep to hunt through.
   useEffect(() => {
