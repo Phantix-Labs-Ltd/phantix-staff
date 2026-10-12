@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import PageErrorBoundary from "@/components/PageErrorBoundary";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -7,15 +7,17 @@ import {
   Users, FileCheck, Wrench, Search, Activity, LogOut, Menu, X,
   Zap, Globe, AlertTriangle, ScanLine, BarChart3, RefreshCw,
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
-  ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronDown, Newspaper,
-  BellRing, ListOrdered,
+  ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronRight, Newspaper,
+  BellRing, ListOrdered, Grip, LayoutGrid, PanelLeftClose, PanelLeftOpen, UserRound,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { APP_URL } from "@/lib/links";
+import { APP_URL, PLATFORM_URL } from "@/lib/links";
 import { cx } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AGI_ENABLED } from "@/lib/api";
-import { BrandWordmark } from "@/components/BrandLogo";
+import { BrandMark, BrandWordmark } from "@/components/BrandLogo";
+import { useSidebarCollapsed } from "@/lib/useSidebarCollapsed";
+import { useDismiss } from "@/lib/useDismiss";
 import CommandPalette, { type PaletteItem } from "@/components/CommandPalette";
 import { StaffMoreSheet, StaffTabBar, useStaffTitle } from "@/components/StaffMobileShell";
 import { useTableCards } from "@/lib/useTableCards";
@@ -67,9 +69,9 @@ const navSections: NavGroupDef[] = [
       { to: "/contribute", label: "Workspace", icon: <Sparkles size={18} />, contributorOnly: true },
       { to: "/contribute/knowledge", label: "Knowledge", icon: <BookOpen size={18} />, contributorOnly: true },
       { to: "/contribute/skills", label: "Skills", icon: <Brain size={18} />, contributorOnly: true },
-      { to: "/contribute/capabilities", label: "YAML packs", icon: <FileCode2 size={18} />, contributorOnly: true },
+      { to: "/contribute/capabilities", label: "Capabilities", icon: <FileCode2 size={18} />, contributorOnly: true },
       { to: "/contribute/engines", label: "Engines", icon: <Layers size={18} />, contributorOnly: true },
-      { to: "/contribute/learning", label: "Learning inbox", icon: <Inbox size={18} />, contributorOnly: true },
+      { to: "/contribute/learning", label: "Learnings", icon: <Inbox size={18} />, contributorOnly: true },
       { to: "/architecture", label: "Atlas", icon: <Layers size={18} />, contributorOnly: true },
     ],
   },
@@ -81,8 +83,8 @@ const navSections: NavGroupDef[] = [
       { to: "/logs", label: "Logs", icon: <FileText size={18} /> },
       { to: "/server", label: "Server", icon: <Server size={18} /> },
       { to: "/services", label: "Services", icon: <Activity size={18} /> },
-      { to: "/bus", label: "Event Bus", icon: <Radio size={18} /> },
-      { to: "/scanner-tools", label: "Scanner Tools", icon: <ScanLine size={18} /> },
+      { to: "/bus", label: "Events", icon: <Radio size={18} /> },
+      { to: "/scanner-tools", label: "Scanners", icon: <ScanLine size={18} /> },
     ],
   },
   {
@@ -92,9 +94,9 @@ const navSections: NavGroupDef[] = [
     items: [
       { to: "/analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
       { to: "/feedback", label: "Feedback", icon: <MessageSquareWarning size={18} /> },
-      { to: "/demo-requests", label: "Demo Requests", icon: <Inbox size={18} /> },
+      { to: "/demo-requests", label: "Demos", icon: <Inbox size={18} /> },
       { to: "/architecture", label: "Architecture", icon: <Layers size={18} /> },
-      { to: "/api-docs.html", label: "API Reference", icon: <BookOpen size={18} />, external: true, sameTab: true },
+      { to: "/api-docs.html", label: "API", icon: <BookOpen size={18} />, external: true, sameTab: true },
     ],
   },
   {
@@ -102,7 +104,7 @@ const navSections: NavGroupDef[] = [
     icon: <Newspaper size={18} />,
     role: "editor",
     items: [
-      { to: "/weekly", label: "The Weekly", icon: <Newspaper size={18} /> },
+      { to: "/weekly", label: "Weekly", icon: <Newspaper size={18} /> },
     ],
   },
   {
@@ -113,22 +115,22 @@ const navSections: NavGroupDef[] = [
       { to: "/compliance", label: "Compliance", icon: <FileCheck size={18} /> },
       { to: "/audits", label: "Audits", icon: <FileCheck size={18} /> },
       { to: "/tooling", label: "Tooling", icon: <Wrench size={18} /> },
-      { to: "/soc-provisioning", label: "SOC Provisioning", icon: <Shield size={18} /> },
+      { to: "/soc-provisioning", label: "Provisioning", icon: <Shield size={18} /> },
       { to: "/discovery", label: "Discovery", icon: <Search size={18} /> },
       { to: "/experience", label: "Experience", icon: <Zap size={18} /> },
-      { to: "/email-templates", label: "Email Templates", icon: <Mail size={18} /> },
-      { to: "/legal-documents", label: "Legal Documents", icon: <ScrollText size={18} /> },
+      { to: "/email-templates", label: "Templates", icon: <Mail size={18} /> },
+      { to: "/legal-documents", label: "Legal", icon: <ScrollText size={18} /> },
     ],
   },
   {
-    label: "AI and agents",
+    label: "Agents",
     icon: <Brain size={18} />,
     role: "admin",
     items: [
-      { to: "/ai", label: "AI Admin", icon: <Brain size={18} /> },
-      { to: "/agent-activity", label: "Agent activity", icon: <Activity size={18} /> },
-      { to: "/vapt-admin", label: "VAPT Admin", icon: <Crosshair size={18} /> },
-      { to: "/agi", label: "Agent Management", icon: <Radar size={18} />, agiOnly: true },
+      { to: "/ai", label: "AI", icon: <Brain size={18} /> },
+      { to: "/agent-activity", label: "Activity", icon: <Activity size={18} /> },
+      { to: "/vapt-admin", label: "VAPT", icon: <Crosshair size={18} /> },
+      { to: "/agi", label: "Fleet", icon: <Radar size={18} />, agiOnly: true },
     ],
   },
   {
@@ -137,12 +139,12 @@ const navSections: NavGroupDef[] = [
     role: "superadmin",
     items: [
       { to: "/overwatch", label: "Overwatch", icon: <Radar size={18} />, superadminOnly: true },
-      { to: "/super-logs", label: "Centralized Logs", icon: <FileText size={18} />, superadminOnly: true },
+      { to: "/super-logs", label: "Superlogs", icon: <FileText size={18} />, superadminOnly: true },
       { to: "/billing", label: "Billing", icon: <BarChart3 size={18} />, superadminOnly: true },
-      { to: "/internal-alerts", label: "Internal Alerts", icon: <BellRing size={18} />, superadminOnly: true },
-      { to: "/engine-jobs", label: "Engine Jobs", icon: <Activity size={18} />, superadminOnly: true },
+      { to: "/internal-alerts", label: "Alerts", icon: <BellRing size={18} />, superadminOnly: true },
+      { to: "/engine-jobs", label: "Jobs", icon: <Activity size={18} />, superadminOnly: true },
       { to: "/terminal", label: "Terminal", icon: <TerminalSquare size={18} />, superadminOnly: true },
-      { to: "/staff", label: "Staff Users", icon: <Users size={18} />, superadminOnly: true },
+      { to: "/staff", label: "Staff", icon: <Users size={18} />, superadminOnly: true },
     ],
   },
 ];
@@ -188,20 +190,42 @@ function activeGroupLabel(sections: NavGroupDef[], pathname: string): string | n
   return best?.label ?? null;
 }
 
+/** Whether a scroll box has content below its visible bottom edge. Rechecks on
+ *  scroll and whenever the box or its content resizes (a group opening). */
+function useMoreBelow(el: HTMLElement | null): boolean {
+  const [more, setMore] = useState(false);
+  useEffect(() => {
+    if (!el) return;
+    const update = () => setMore(el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    if (el.firstElementChild) observer.observe(el.firstElementChild);
+    return () => {
+      el.removeEventListener("scroll", update);
+      observer.disconnect();
+    };
+  }, [el]);
+  return more;
+}
+
 function NavLeafLink({ item, onClick, mobile }: { item: NavLeafItem; onClick?: () => void; mobile?: boolean }) {
+  // In the sidebar the label hides while the rail is collapsed; the mobile menu has no rail.
+  const label = mobile ? item.label : <span className="sg-hide-collapsed">{item.label}</span>;
   if (item.sameTab) {
     return (
-      <a key={item.to} href={item.to} className={cx("nav-item", mobile && "py-2")} onClick={onClick}>
+      <a key={item.to} href={item.to} title={item.label} className={cx("nav-item", mobile && "py-2")} onClick={onClick}>
         {item.icon}
-        {item.label}
+        {label}
       </a>
     );
   }
   if (item.external) {
     return (
-      <a key={item.to} href={item.to} target="_blank" rel="noopener noreferrer" className={cx("nav-item", mobile && "py-2")} onClick={onClick}>
+      <a key={item.to} href={item.to} title={item.label} target="_blank" rel="noopener noreferrer" className={cx("nav-item", mobile && "py-2")} onClick={onClick}>
         {item.icon}
-        {item.label}
+        {label}
       </a>
     );
   }
@@ -211,10 +235,11 @@ function NavLeafLink({ item, onClick, mobile }: { item: NavLeafItem; onClick?: (
       to={item.to}
       end={item.to === "/dashboard" || item.to === "/contribute"}
       onClick={onClick}
+      title={item.label}
       className={({ isActive }) => cx("nav-item", mobile && "py-2", isActive && "active")}
     >
       {item.icon}
-      {item.label}
+      {label}
     </NavLink>
   );
 }
@@ -249,11 +274,15 @@ function NavGroup({
         onClick={onToggle}
         aria-expanded={open}
         aria-controls={listId}
+        title={section.label}
         className={cx("nav-item w-full", mobile && "py-2", active && "text-slate-100")}
       >
         {section.icon}
-        {section.label}
-        <ChevronDown size={14} className={cx("ml-auto shrink-0 text-slate-500 transition-transform duration-200", open && "rotate-180")} />
+        {mobile ? section.label : <span className="sg-hide-collapsed">{section.label}</span>}
+        <ChevronRight
+          size={14}
+          className={cx("ml-auto shrink-0 text-slate-500 transition-transform duration-200", open && "rotate-90", !mobile && "sg-hide-collapsed")}
+        />
       </button>
       <AnimatePresence initial={false}>
         {open && (
@@ -263,9 +292,9 @@ function NavGroup({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
+            className={cx("overflow-hidden", !mobile && "sg-hide-collapsed")}
           >
-            <div className="ml-[1.1rem] mb-1 mt-1 space-y-1 border-l border-phantix-700/50 pl-2.5">
+            <div className="ml-[1.1rem] my-0.5 space-y-0.5 border-l border-phantix-700/50 pl-2.5">
               {section.items.map((item) => (
                 <NavLeafLink key={item.to} item={item} onClick={onNavigate} mobile={mobile} />
               ))}
@@ -282,6 +311,14 @@ export default function Layout() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const { collapsed, toggle: toggleSidebar } = useSidebarCollapsed();
+  // The launcher and account menus close on a press outside them or on Escape.
+  const [launcher, setLauncher] = useState(false);
+  const launcherRef = useDismiss(launcher, () => setLauncher(false));
+  const [userMenu, setUserMenu] = useState(false);
+  const userMenuRef = useDismiss(userMenu, () => setUserMenu(false));
+  const [navEl, setNavEl] = useState<HTMLElement | null>(null);
+  const navMoreBelow = useMoreBelow(navEl);
   // Phones: bottom tab bar + "More" sheet, page title in the app bar, and data
   // tables rendered as lists.
   const [moreOpen, setMoreOpen] = useState(false);
@@ -309,12 +346,22 @@ export default function Layout() {
     () => visibleNavSections({ isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin }),
     [isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin],
   );
-  // Any number of groups can be open; landing on a page also opens the group
-  // it lives in, without closing the others.
+  // Every group starts open, including groups that appear once the roles load.
+  // The operator can close any of them, and landing on a page reopens the group
+  // it lives in without closing the others.
   const activeGroup = useMemo(() => activeGroupLabel(sections, location.pathname), [sections, location.pathname]);
-  const [openGroups, setOpenGroups] = useState<Set<string>>(
-    () => new Set(activeGroup ? [activeGroup] : []),
-  );
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set(sections.map((s) => s.label)));
+  const seenGroups = useRef(new Set(sections.map((s) => s.label)));
+  useEffect(() => {
+    const fresh = sections.map((s) => s.label).filter((label) => !seenGroups.current.has(label));
+    if (fresh.length === 0) return;
+    for (const label of fresh) seenGroups.current.add(label);
+    setOpenGroups((open) => new Set([...open, ...fresh]));
+  }, [sections]);
+  useEffect(() => {
+    setLauncher(false);
+    setUserMenu(false);
+  }, [location.pathname]);
   useEffect(() => {
     if (activeGroup) {
       setOpenGroups((open) => (open.has(activeGroup) ? open : new Set(open).add(activeGroup)));
@@ -385,34 +432,52 @@ export default function Layout() {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
-      <aside className="hidden lg:flex w-[248px] shrink-0 flex-col border-r border-phantix-700/30 bg-[rgb(var(--surface-sidebar))]">
-        <div className="flex h-16 items-center gap-3 px-5 border-b border-phantix-700/30">
-          <BrandWordmark className="h-8" />
-          <div>
-            <p className="font-display text-sm font-bold text-white tracking-tight">Staff Portal</p>
-          </div>
+      <aside
+        data-collapsed={collapsed ? "" : undefined}
+        className={cx(
+          "sg-sidebar fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-phantix-700/30 bg-[rgb(var(--surface-sidebar))] lg:flex",
+          collapsed ? "w-[72px]" : "w-[248px]",
+        )}
+      >
+        {/* Brand row: the lockup, the app label, and the collapse control on one line. */}
+        <div className="flex h-16 shrink-0 items-center gap-1.5 border-b border-phantix-700/30 px-3">
+          <BrandMark className="sg-show-collapsed mx-2 h-8 w-8 shrink-0" />
+          <BrandWordmark className="sg-hide-collapsed h-[22px] shrink-0" />
+          <span className="sg-hide-collapsed shrink-0 rounded-md border border-gold-400/30 bg-gold-400/10 px-1.5 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.04em] text-gold-300">
+            Staff
+          </span>
+          <button
+            onClick={(e) => {
+              toggleSidebar();
+              // The rail widens while anything in it has focus, so a mouse click
+              // would hold the collapsed rail open. Keyboard users keep focus.
+              if (e.detail > 0) e.currentTarget.blur();
+            }}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="sg-hide-collapsed ml-auto shrink-0 rounded-md p-1.5 text-slate-500 transition-colors hover:bg-phantix-800/60 hover:text-slate-100"
+          >
+            {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
-          {renderNav(false)}
-
-          {/* Launch app */}
-          <div className="px-3">
-            <a
-              href={APP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="nav-item text-phantix-300"
-            >
-              <Globe size={18} />
-              Launch App
-            </a>
-          </div>
-        </nav>
+        {/* The list fades out at the bottom edge while more of it is below. */}
+        <div className="relative min-h-0 flex-1">
+          <nav ref={setNavEl} className="h-full overflow-y-auto px-3 py-4">
+            <div className="space-y-0.5">{renderNav(false)}</div>
+          </nav>
+          <div
+            aria-hidden="true"
+            className={cx(
+              "pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[rgb(var(--surface-sidebar))] to-transparent transition-opacity duration-200",
+              navMoreBelow ? "opacity-100" : "opacity-0",
+            )}
+          />
+        </div>
       </aside>
 
       {/* Main area */}
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className={cx("flex min-w-0 flex-1 flex-col overflow-hidden", collapsed ? "lg:ml-[72px]" : "lg:ml-[248px]")}>
         {/* Topbar */}
         <header className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-phantix-700/30 bg-phantix-950/60 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-xl lg:px-6">
           {/* Phones navigate with the bottom tab bar; the dropdown stays for tablets. */}
@@ -425,18 +490,53 @@ export default function Layout() {
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setPaletteOpen(true)}
-            className="ml-2 hidden items-center gap-2 rounded-lg border border-phantix-700/60 bg-phantix-900/60 px-3 py-2 text-sm text-slate-400 transition-colors hover:border-phantix-600 hover:text-slate-200 sm:flex"
-            aria-label="Search the staff console"
-          >
-            <Search size={15} />
-            <span>Search…</span>
-            <kbd className="ml-1 rounded border border-phantix-600/60 bg-phantix-850 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-slate-500">
-              {shortcutLabel}
-            </kbd>
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            {/* Launcher: open the product apps. Phones open them from the More sheet. */}
+            <div ref={launcherRef} className="relative hidden md:block">
+              <button
+                type="button"
+                onClick={() => setLauncher((v) => !v)}
+                title="Open an application"
+                aria-label="Open an application"
+                aria-haspopup="menu"
+                aria-expanded={launcher}
+                className="inline-flex rounded-md border border-phantix-700 bg-phantix-900 p-2 text-slate-400 transition-colors hover:border-phantix-600 hover:text-white"
+              >
+                <Grip size={16} />
+              </button>
+              {launcher && (
+                <div className="absolute left-0 top-full z-50 mt-2 w-56 rounded-md border border-phantix-700 bg-phantix-900 p-1 shadow-card">
+                  <a
+                    href={APP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setLauncher(false)}
+                    className="flex items-center gap-2.5 rounded px-2.5 py-2 text-sm text-slate-300 hover:bg-phantix-800"
+                  >
+                    <Globe size={15} /> Command Centre
+                  </a>
+                  <a
+                    href={PLATFORM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setLauncher(false)}
+                    className="flex items-center gap-2.5 rounded px-2.5 py-2 text-sm text-slate-300 hover:bg-phantix-800"
+                  >
+                    <LayoutGrid size={15} /> Platform
+                  </a>
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              title={`Search (${shortcutLabel})`}
+              aria-label="Search the staff console"
+              className="hidden rounded-md border border-phantix-700 bg-phantix-900 p-2 text-slate-400 transition-colors hover:border-phantix-600 hover:text-white sm:inline-flex"
+            >
+              <Search size={16} />
+            </button>
+          </div>
 
           {/* Phone app bar: the current page. */}
           <span className="min-w-0 truncate font-display text-[17px] font-bold text-white md:hidden">{phoneTitle}</span>
@@ -450,25 +550,43 @@ export default function Layout() {
             <span className={cx("chip hidden capitalize sm:inline-flex", roleBadge)}>
               {session?.role || "staff"}
             </span>
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-slate-200">{session?.fullName || session?.email}</p>
-              {session?.email && <p className="text-xs text-slate-500">{session.email}</p>}
+            <div ref={userMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  // Phones: the account lives in the More sheet.
+                  if (window.matchMedia("(max-width: 767px)").matches) setMoreOpen(true);
+                  else setUserMenu((v) => !v);
+                }}
+                aria-haspopup="menu"
+                aria-expanded={userMenu}
+                aria-label="Account"
+                title={session?.fullName || session?.email || "Account"}
+                className="inline-flex rounded-md border border-phantix-700 bg-phantix-900 p-2 text-slate-400 transition-colors hover:border-phantix-600 hover:text-white"
+              >
+                <UserRound size={16} />
+              </button>
+              {userMenu && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-60 overflow-hidden rounded-md border border-phantix-700 bg-phantix-900 shadow-card">
+                  <div className="border-b border-phantix-700/40 px-4 py-3">
+                    <p className="truncate text-sm font-semibold text-slate-100">{session?.fullName || session?.email || "Staff"}</p>
+                    {session?.email && <p className="truncate text-xs text-slate-500">{session.email}</p>}
+                  </div>
+                  <div className="p-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenu(false);
+                        handleLogout();
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm text-severity-critical hover:bg-severity-critical/10"
+                    >
+                      <LogOut size={15} /> Sign out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={() => setMoreOpen(true)}
-              aria-label="Account"
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-gold-400/40 bg-phantix-850 font-display text-sm font-bold text-gold-300 md:hidden"
-            >
-              {(session?.fullName || session?.email || "S").slice(0, 1).toUpperCase()}
-            </button>
-            <button
-              onClick={handleLogout}
-              className="hidden rounded-lg p-2 text-slate-400 transition-colors hover:bg-phantix-800/70 hover:text-severity-critical md:block"
-              title="Logout"
-            >
-              <LogOut size={18} />
-            </button>
           </div>
         </header>
 
@@ -489,7 +607,7 @@ export default function Layout() {
             transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-x-0 top-16 z-50 hidden max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-phantix-600/60 bg-[rgb(var(--surface-card))] shadow-2xl md:block lg:hidden"
           >
-            <nav className="px-4 py-4 space-y-1.5">
+            <nav className="px-4 py-4 space-y-0.5">
               {renderNav(true)}
             </nav>
           </motion.div>
