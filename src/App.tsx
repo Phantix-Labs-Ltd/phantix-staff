@@ -42,6 +42,9 @@ import SocProvisioning from "@/pages/admin/SocProvisioning";
 import EmailTemplates from "@/pages/admin/EmailTemplates";
 import LegalDocuments from "@/pages/admin/LegalDocuments";
 import WeeklyAdmin from "@/pages/admin/Weekly";
+import WeeklyEditor from "@/pages/admin/WeeklyEditor";
+import WeeklyIssues from "@/pages/admin/WeeklyIssues";
+import WeeklyMasthead from "@/pages/admin/WeeklyMasthead";
 import InternalAlerts from "@/pages/admin/InternalAlerts";
 import ContributeHome from "@/pages/contribute/ContributeHome";
 import ContributeKnowledge from "@/pages/contribute/ContributeKnowledge";
@@ -167,6 +170,10 @@ export default function App() {
             <Route path="/email-templates" element={<RequireAdmin><EmailTemplates /></RequireAdmin>} />
             <Route path="/legal-documents" element={<RequireAdmin><LegalDocuments /></RequireAdmin>} />
             <Route path="/weekly" element={<RequireEditor><WeeklyAdmin /></RequireEditor>} />
+            <Route path="/weekly/new" element={<RequireEditor><WeeklyEditor /></RequireEditor>} />
+            <Route path="/weekly/issues" element={<RequireEditor><WeeklyIssues /></RequireEditor>} />
+            <Route path="/weekly/masthead" element={<RequireEditor><WeeklyMasthead /></RequireEditor>} />
+            <Route path="/weekly/:postId" element={<RequireEditor><WeeklyEditor /></RequireEditor>} />
             <Route path="/tooling" element={<RequireAdmin><ToolingAdmin /></RequireAdmin>} />
             <Route path="/discovery" element={<RequireAdmin><DiscoveryAdmin /></RequireAdmin>} />
             <Route path="/experience" element={<RequireAdmin><ExperienceAdmin /></RequireAdmin>} />

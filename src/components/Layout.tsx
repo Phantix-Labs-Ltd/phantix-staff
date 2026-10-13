@@ -9,6 +9,7 @@ import {
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
   ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronRight, Newspaper,
   BellRing, ListOrdered, Grip, LayoutGrid, PanelLeftClose, PanelLeftOpen, UserRound,
+  Plus, FolderOpen, Settings2,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { APP_URL, PLATFORM_URL } from "@/lib/links";
@@ -101,11 +102,14 @@ const navSections: NavGroupDef[] = [
     ],
   },
   {
-    label: "Editorial",
+    label: "The Weekly",
     icon: <Newspaper size={18} />,
     role: "editor",
     items: [
-      { to: "/weekly", label: "Weekly", icon: <Newspaper size={18} /> },
+      { to: "/weekly", label: "Posts", icon: <Newspaper size={18} /> },
+      { to: "/weekly/new", label: "New post", icon: <Plus size={18} /> },
+      { to: "/weekly/issues", label: "Issues", icon: <FolderOpen size={18} /> },
+      { to: "/weekly/masthead", label: "Masthead", icon: <Settings2 size={18} /> },
     ],
   },
   {
