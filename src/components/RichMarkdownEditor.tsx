@@ -24,6 +24,10 @@ export type ImageUpload = (file: File) => Promise<{ url: string; alt?: string }>
 interface Props {
   value: string;
   onChange: (value: string) => void;
+  /** Stored reader-ready HTML, painted in preference to Markdown when present. */
+  html?: string;
+  /** Called with the editor's rendered HTML on every change. */
+  onChangeHtml?: (html: string) => void;
   onUploadImage?: ImageUpload;
   placeholder?: string;
   disabled?: boolean;
@@ -163,6 +167,8 @@ const BLOCK_OPTIONS = [
 export default function RichMarkdownEditor({
   value,
   onChange,
+  html,
+  onChangeHtml,
   onUploadImage,
   placeholder,
   disabled,
@@ -172,7 +178,8 @@ export default function RichMarkdownEditor({
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const lastEmitted = useRef<string | null>(null);
+  const lastPaintedMd = useRef<string | null>(null);
+  const lastPaintedHtml = useRef<string | null>(null);
   const savedRange = useRef<Range | null>(null);
   const [empty, setEmpty] = useState(!value.trim());
   const [uploading, setUploading] = useState(false);
@@ -200,27 +207,33 @@ export default function RichMarkdownEditor({
     };
   }, [fullscreen]);
 
-  // Paint the editor from the stored Markdown when the value changes for a
-  // reason other than typing (opening a post, an import, a conflict reload).
-  // Layout effect so the first paint happens before the browser shows a frame.
+  // Paint the editor when the value changes for a reason other than typing
+  // (opening a post, an import, a conflict reload). The stored HTML wins when
+  // present: Markdown cannot carry exact spacing and indentation.
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (value === lastEmitted.current) return;
-    el.innerHTML = markdownToHtml(value);
-    lastEmitted.current = value;
-    setEmpty(!value.trim());
+    const useHtml = Boolean(html) && html !== lastPaintedHtml.current;
+    const mdChanged = value !== lastPaintedMd.current;
+    if (!useHtml && !mdChanged) return;
+    el.innerHTML = useHtml ? (html as string) : markdownToHtml(value);
+    lastPaintedHtml.current = html ?? "";
+    lastPaintedMd.current = value;
+    setEmpty(!el.textContent?.trim() && !el.querySelector("img"));
     setImageSelected(false);
-  }, [value]);
+  }, [value, html]);
 
   const emit = useCallback(() => {
     const el = ref.current;
     if (!el) return;
-    const md = htmlToMarkdown(el.innerHTML);
-    lastEmitted.current = md;
+    const rendered = el.innerHTML;
+    const md = htmlToMarkdown(rendered);
+    lastPaintedHtml.current = rendered;
+    lastPaintedMd.current = md;
     setEmpty(!el.textContent?.trim() && !el.querySelector("img"));
     onChange(md);
-  }, [onChange]);
+    onChangeHtml?.(rendered);
+  }, [onChange, onChangeHtml]);
 
   // A figure whose file is gone must not linger as a broken image the writer
   // cannot remove: drop it and update the stored body. `error` does not bubble,

@@ -177,6 +177,7 @@ export default function WeeklyEditor() {
       excerpt: d.excerpt.trim(),
       featured: d.featured,
       body: d.body,
+      body_html: d.body_html ?? "",
       issue_id: d.issue_id ?? null,
       ...(d.id ? { revision: revRef.current } : {}),
     };
@@ -365,6 +366,7 @@ export default function WeeklyEditor() {
               date: parsed.date || cur.date,
               featured: parsed.featured,
               body: parsed.body || cur.body,
+              body_html: "",
             }
           : cur,
       );
@@ -592,6 +594,7 @@ export default function WeeklyEditor() {
                     kicker={draft.kicker}
                     excerpt={draft.excerpt}
                     body={draft.body}
+                    html={draft.body_html ?? ""}
                     contributors={contributors}
                     date={draft.date}
                   />
@@ -600,7 +603,9 @@ export default function WeeklyEditor() {
                 <RichMarkdownEditor
                   fill
                   value={draft.body}
+                  html={draft.body_html ?? ""}
                   onChange={(body) => markDirty({ body })}
+                  onChangeHtml={(body_html) => markDirty({ body_html })}
                   onUploadImage={uploadInlineImage}
                   placeholder={"Start writing. Use the toolbar for a heading, a quote, a list, a link or an image — or drag an image in."}
                 />

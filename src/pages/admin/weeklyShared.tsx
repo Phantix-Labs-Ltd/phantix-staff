@@ -18,6 +18,7 @@ export interface WeeklyPost {
   excerpt: string;
   featured: boolean;
   body: string;
+  body_html?: string | null;
   status: PostStatus;
   revision: number;
   published_at: string | null;
@@ -113,7 +114,7 @@ export type Draft = Omit<
 };
 
 export const EMPTY: Draft = {
-  slug: "", title: "", no: "", order: 0, date: "", kicker: "", excerpt: "", featured: false, body: "",
+  slug: "", title: "", no: "", order: 0, date: "", kicker: "", excerpt: "", featured: false, body: "", body_html: "",
 };
 
 export const STATUS_META: Record<PostStatus, { label: string; className: string }> = {
