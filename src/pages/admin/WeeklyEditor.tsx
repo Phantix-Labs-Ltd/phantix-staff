@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-  ArrowLeft, CheckCircle2, Eye, EyeOff, History, ImagePlus, Loader2, Pencil, RotateCcw,
-  Save, Send, Trash2, Undo2, Users,
+  ArrowLeft, CheckCircle2, Eye, EyeOff, FileUp, History, ImagePlus, Loader2, Pencil, Plus,
+  RotateCcw, Save, Send, Trash2, Undo2, Users,
 } from "lucide-react";
 import { Card, Modal, PageHeader, PageSkeleton } from "@/components/ui";
-import MarkdownEditor from "@/components/MarkdownEditor";
-import MarkdownView from "@/components/MarkdownView";
+import ReaderPreview from "@/components/ReaderPreview";
+import RichMarkdownEditor from "@/components/RichMarkdownEditor";
 import { api, ApiError } from "@/lib/api";
 import { useResource } from "@/lib/useResource";
 import { useStore } from "@/lib/store";
@@ -73,6 +73,14 @@ export default function WeeklyEditor() {
   const [presence, setPresence] = useState<EditorPresence[]>([]);
   const [panel, setPanel] = useState<"none" | "history" | "activity" | "figures" | "contributors">("none");
   const [figure, setFigure] = useState<{ open: boolean; section: string }>({ open: false, section: "" });
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importName, setImportName] = useState("");
+  const [importing, setImporting] = useState(false);
+  const importFileRef = useRef<HTMLInputElement>(null);
+  const [newIssueOpen, setNewIssueOpen] = useState(false);
+  const [newIssue, setNewIssue] = useState({ number: "", name: "", date: "" });
+  const [creatingIssue, setCreatingIssue] = useState(false);
 
   const loadExtras = useCallback(async (id: number) => {
     try {
@@ -320,6 +328,83 @@ export default function WeeklyEditor() {
 
   const sections = useMemo(() => sectionsOf(draft?.body ?? ""), [draft?.body]);
 
+  // ── Markdown import, into this draft ──
+  const readImportFile = (file: File | undefined) => {
+    if (!file) return;
+    if (!/\.(md|markdown)$/i.test(file.name)) {
+      toast("error", "Markdown only", "Choose a .md or .markdown file.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImportText(String(reader.result ?? ""));
+      setImportName(file.name);
+    };
+    reader.readAsText(file);
+  };
+
+  const applyImport = async () => {
+    if (!importText.trim()) return;
+    setImporting(true);
+    try {
+      const parsed = await api.post<{
+        title: string; slug: string; no: string; order: number | null;
+        kicker: string | null; excerpt: string; date: string; featured: boolean; body: string;
+      }>("/admin/blog/markdown/parse", { markdown: importText, filename: importName });
+      // Only overwrite fields the file actually provided.
+      setDraft((cur) =>
+        cur
+          ? {
+              ...cur,
+              title: parsed.title || cur.title,
+              slug: parsed.slug || cur.slug,
+              no: parsed.no || cur.no,
+              order: parsed.order ?? cur.order,
+              kicker: parsed.kicker ?? cur.kicker,
+              excerpt: parsed.excerpt || cur.excerpt,
+              date: parsed.date || cur.date,
+              featured: parsed.featured,
+              body: parsed.body || cur.body,
+            }
+          : cur,
+      );
+      setSlugTouched(true);
+      setDirty(true);
+      setImportOpen(false);
+      setImportText("");
+      setImportName("");
+      toast("success", "Imported into the editor", parsed.title || importName || "Markdown post");
+    } catch (e) {
+      toast("error", "Import failed", e instanceof Error ? e.message : "");
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const createIssue = async () => {
+    if (!newIssue.number.trim() && !newIssue.name.trim()) {
+      toast("error", "Name the issue", "Give it a number such as “Issue 01”, or a name.");
+      return;
+    }
+    setCreatingIssue(true);
+    try {
+      const created = await api.post<BlogIssue>("/admin/blog/issues", {
+        number: newIssue.number.trim(),
+        name: newIssue.name.trim(),
+        date: newIssue.date.trim(),
+      });
+      issues.refresh();
+      markDirty({ issue_id: created.id });
+      setNewIssueOpen(false);
+      setNewIssue({ number: "", name: "", date: "" });
+      toast("success", "Issue created", created.number || created.name);
+    } catch (e) {
+      toast("error", "Could not create the issue", e instanceof Error ? e.message : "");
+    } finally {
+      setCreatingIssue(false);
+    }
+  };
+
   if (loading) return <PageSkeleton />;
   if (loadError || !draft) {
     return (
@@ -353,6 +438,9 @@ export default function WeeklyEditor() {
           <>
             <button className="btn-ghost" onClick={() => navigate("/weekly")} disabled={Boolean(busy)}>
               <ArrowLeft size={15} /> All posts
+            </button>
+            <button className="btn-secondary" onClick={() => setImportOpen(true)} disabled={Boolean(busy)}>
+              <FileUp size={15} /> Import .md
             </button>
             <button className="btn-secondary" onClick={() => setPreview((p) => !p)}>
               {preview ? <Pencil size={15} /> : <Eye size={15} />}
@@ -489,25 +577,28 @@ export default function WeeklyEditor() {
             </div>
 
             <div>
-              <span className="label">Body</span>
-              <p className="mb-1.5 text-[12px] text-slate-500">
-                Markdown. {draft.body.length.toLocaleString()} characters. Drag an image in, or paste one, to add a figure.
-              </p>
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="label !mb-0">Body</span>
+                <span className="text-[12px] text-slate-500">
+                  {preview ? "Reader preview" : "Rich text"} · {draft.body.length.toLocaleString()} characters
+                </span>
+              </div>
               {preview ? (
-                <div className="max-h-[70vh] min-h-[320px] overflow-auto rounded-md border border-phantix-700 bg-phantix-950/60 p-5">
-                  {draft.body.trim() ? (
-                    <MarkdownView source={draft.body} />
-                  ) : (
-                    <p className="text-sm text-slate-500">Nothing to preview yet.</p>
-                  )}
-                </div>
+                <ReaderPreview
+                  title={draft.title}
+                  kicker={draft.kicker}
+                  excerpt={draft.excerpt}
+                  body={draft.body}
+                  contributors={contributors}
+                  date={draft.date}
+                />
               ) : (
-                <MarkdownEditor
+                <RichMarkdownEditor
                   value={draft.body}
                   onChange={(body) => markDirty({ body })}
                   onUploadImage={uploadInlineImage}
                   minHeight={460}
-                  placeholder={"The first paragraph opens with the drop cap.\n\n## A subheading\n\nBody text with **bold**, *italic*, > quotes and lists."}
+                  placeholder={"Start writing. Use the toolbar for a heading, a quote, a list, a link or an image — or drag an image in."}
                 />
               )}
             </div>
@@ -545,19 +636,46 @@ export default function WeeklyEditor() {
             </div>
             <div>
               <label className="label" htmlFor="w-issue">Issue</label>
-              <select
-                id="w-issue"
-                className="input"
-                value={draft.issue_id ?? ""}
-                onChange={(e) => markDirty({ issue_id: e.target.value ? Number(e.target.value) : null })}
-              >
-                <option value="">Unassigned</option>
-                {issues.data.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.number || i.name}{i.number && i.name ? ` — ${i.name}` : ""}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <select
+                  id="w-issue"
+                  className="input"
+                  value={draft.issue_id ?? ""}
+                  onChange={(e) => markDirty({ issue_id: e.target.value ? Number(e.target.value) : null })}
+                >
+                  <option value="">Unassigned</option>
+                  {issues.data.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.number || i.name}{i.number && i.name ? ` — ${i.name}` : ""}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="btn-secondary shrink-0 !px-2 !py-2"
+                  onClick={() => setNewIssueOpen(true)}
+                  title="Create an issue"
+                  aria-label="Create an issue"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+              {issues.loading && !issues.data.length ? (
+                <p className="mt-1 text-[11px] text-slate-500">Loading issues…</p>
+              ) : issues.error ? (
+                <p className="mt-1 text-[11px] text-severity-critical">
+                  Could not load issues.{" "}
+                  <button type="button" className="underline" onClick={issues.refresh}>Retry</button>
+                </p>
+              ) : issues.data.length === 0 ? (
+                <p className="mt-1 text-[11px] text-slate-500">
+                  No issues yet —{" "}
+                  <button type="button" className="text-gold-300 underline" onClick={() => setNewIssueOpen(true)}>
+                    create one
+                  </button>
+                  .
+                </p>
+              ) : null}
             </div>
             <div>
               <label className="label" htmlFor="w-date">Issue date</label>
@@ -676,6 +794,71 @@ export default function WeeklyEditor() {
           </Card>
         </aside>
       </div>
+
+      {/* ── Import Markdown into this draft ── */}
+      <Modal open={importOpen} onClose={() => !importing && setImportOpen(false)} title="Import Markdown" wide>
+        <div className="space-y-4">
+          <p className="text-sm text-slate-400">
+            Frontmatter sets the fields (<code className="font-mono text-gold-300">title, no, order, date, kicker, excerpt, featured</code>).
+            The body is converted into the rich editor; a field is only overwritten when the file provides it.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              ref={importFileRef}
+              type="file"
+              accept=".md,.markdown,text/markdown"
+              className="hidden"
+              onChange={(e) => {
+                readImportFile(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <button className="btn-secondary" onClick={() => importFileRef.current?.click()}>
+              <FileUp size={15} /> Choose a .md file
+            </button>
+            {importName && <span className="font-mono text-xs text-slate-400">{importName}</span>}
+          </div>
+          <textarea
+            className="input !min-h-[240px] font-mono text-[13px]"
+            aria-label="Markdown to import"
+            placeholder={"---\ntitle: \"A New Essay\"\nno: \"05\"\ndate: \"October 2026\"\nexcerpt: \"One-line summary.\"\n---\n\nFirst paragraph…"}
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+          />
+          <div className="flex justify-end gap-2">
+            <button className="btn-ghost" disabled={importing} onClick={() => setImportOpen(false)}>Cancel</button>
+            <button className="btn-primary" disabled={importing || !importText.trim()} onClick={() => void applyImport()}>
+              {importing ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />} Import into editor
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Create an issue inline ── */}
+      <Modal open={newIssueOpen} onClose={() => !creatingIssue && setNewIssueOpen(false)} title="New issue">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="label" htmlFor="ei-number">Issue number</label>
+              <input id="ei-number" className="input" value={newIssue.number} onChange={(e) => setNewIssue({ ...newIssue, number: e.target.value })} placeholder="Issue 01" />
+            </div>
+            <div>
+              <label className="label" htmlFor="ei-date">Date</label>
+              <input id="ei-date" className="input" value={newIssue.date} onChange={(e) => setNewIssue({ ...newIssue, date: e.target.value })} placeholder="September 2026" />
+            </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="ei-name">Name</label>
+            <input id="ei-name" className="input" value={newIssue.name} onChange={(e) => setNewIssue({ ...newIssue, name: e.target.value })} placeholder="The launch issue" />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button className="btn-ghost" disabled={creatingIssue} onClick={() => setNewIssueOpen(false)}>Cancel</button>
+            <button className="btn-primary" disabled={creatingIssue} onClick={() => void createIssue()}>
+              {creatingIssue ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Create issue
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <FigureModal
         open={figure.open}
