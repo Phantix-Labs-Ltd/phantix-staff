@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Bold, Code, Heading2, Heading3, ImagePlus, Italic, Link2, List, ListOrdered,
-  Loader2, Minus, Pilcrow, Quote, Redo2, Strikethrough, Undo2,
+  Loader2, Maximize2, Minimize2, Minus, Pilcrow, Quote, Redo2, Strikethrough, Undo2,
 } from "lucide-react";
 import { cx } from "@/lib/utils";
 import { htmlToMarkdown, markdownToHtml, readingStats } from "@/lib/markdown";
@@ -146,6 +146,23 @@ export default function RichMarkdownEditor({
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [active, setActive] = useState<ActiveState>(EMPTY_ACTIVE);
+  const [fullscreen, setFullscreen] = useState(false);
+  const isFill = fill || fullscreen;
+
+  // Full screen: lock the page behind the overlay and leave on Escape.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [fullscreen]);
 
   // Paint the editor from the stored Markdown when the value changes for a
   // reason other than typing (opening a post, an import, a conflict reload).
@@ -339,7 +356,10 @@ export default function RichMarkdownEditor({
     <div
       className={cx(
         "overflow-hidden rounded-lg border border-phantix-700/60 bg-phantix-950/50 focus-within:border-gold-400/40",
-        fill && "flex h-full min-h-0 flex-col",
+        isFill && "flex min-h-0 flex-col",
+        fullscreen
+          ? "fixed inset-0 z-[80] rounded-none border-0"
+          : fill && "h-full",
       )}
     >
       {/* Toolbar */}
@@ -445,8 +465,17 @@ export default function RichMarkdownEditor({
           </ToolButton>
         ) : null}
         <Divider />
-        <span className="ml-auto pr-1.5 text-[11px] tabular-nums text-slate-500">
-          {stats.words.toLocaleString()} words · {stats.minutes} min read
+        <span className="ml-auto flex items-center gap-1">
+          <ToolButton
+            label={fullscreen ? "Exit full screen (Esc)" : "Full screen"}
+            onClick={() => setFullscreen((v) => !v)}
+            active={fullscreen}
+          >
+            {fullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+          </ToolButton>
+          <span className="pr-1.5 text-[11px] tabular-nums text-slate-500">
+            {stats.words.toLocaleString()} words · {stats.minutes} min read
+          </span>
         </span>
       </div>
 
@@ -477,7 +506,7 @@ export default function RichMarkdownEditor({
         </div>
       ) : null}
 
-      <div className={cx("relative", fill && "min-h-0 flex-1")}>
+      <div className={cx("relative", isFill && "min-h-0 flex-1")}>
         <div
           ref={ref}
           role="textbox"
@@ -521,9 +550,9 @@ export default function RichMarkdownEditor({
           className={cx(
             "weekly-prose w-full px-6 py-5 outline-none",
             disabled && "opacity-60",
-            fill && "h-full overflow-y-auto",
+            isFill && "h-full overflow-y-auto",
           )}
-          style={fill ? undefined : { minHeight }}
+          style={isFill ? undefined : { minHeight }}
         />
         {empty ? (
           <p className="pointer-events-none absolute left-6 top-5 max-w-[90%] text-[15px] leading-7 text-slate-600">
