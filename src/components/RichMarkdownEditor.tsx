@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  Bold, Code, Heading2, Heading3, ImagePlus, Italic, Link2, List, ListOrdered,
-  Loader2, Maximize2, Minimize2, Minus, Pilcrow, Quote, Redo2, Strikethrough, Undo2,
+  Bold, Code, Heading2, Heading3, ImagePlus, IndentDecrease, IndentIncrease, Italic,
+  Link2, List, ListOrdered, Loader2, Maximize2, Minimize2, Minus, Pilcrow, Quote, Redo2,
+  Strikethrough, Table2, Trash2, Undo2,
 } from "lucide-react";
 import { cx } from "@/lib/utils";
 import { htmlToMarkdown, markdownToHtml, readingStats } from "@/lib/markdown";
@@ -43,12 +44,13 @@ interface ActiveState {
   link: boolean;
   ul: boolean;
   ol: boolean;
+  table: boolean;
   block: string;
 }
 
 const EMPTY_ACTIVE: ActiveState = {
   bold: false, italic: false, strike: false, code: false, link: false,
-  ul: false, ol: false, block: "p",
+  ul: false, ol: false, table: false, block: "p",
 };
 
 function elementOf(node: Node | null): HTMLElement | null {
@@ -82,6 +84,37 @@ function commandState(command: string): boolean {
   } catch {
     return false;
   }
+}
+
+const isImg = (n: Node | null): n is HTMLImageElement =>
+  !!n && n.nodeType === Node.ELEMENT_NODE && (n as HTMLElement).tagName === "IMG";
+
+/** The image immediately before/after a collapsed caret, if there is one. */
+function imageAdjacent(range: Range, side: "before" | "after"): HTMLImageElement | null {
+  const container = range.startContainer;
+  if (container.nodeType === Node.TEXT_NODE) {
+    const text = container as Text;
+    if (side === "before") {
+      if (range.startOffset > 0) return null;
+      let prev = text.previousSibling;
+      while (prev && prev.nodeType === Node.TEXT_NODE && !(prev.textContent ?? "").length) {
+        prev = prev.previousSibling;
+      }
+      return isImg(prev) ? prev : null;
+    }
+    if (range.startOffset < (text.textContent ?? "").length) return null;
+    let next = text.nextSibling;
+    while (next && next.nodeType === Node.TEXT_NODE && !(next.textContent ?? "").length) {
+      next = next.nextSibling;
+    }
+    return isImg(next) ? next : null;
+  }
+  if (container.nodeType === Node.ELEMENT_NODE) {
+    const parent = container as HTMLElement;
+    const node = parent.childNodes[side === "before" ? range.startOffset - 1 : range.startOffset];
+    return isImg(node) ? node : null;
+  }
+  return null;
 }
 
 function ToolButton({
@@ -118,7 +151,7 @@ function ToolButton({
   );
 }
 
-const Divider = () => <span className="mx-1 h-5 w-px shrink-0 bg-phantix-700/60" aria-hidden />;
+const Divider = () => <span className="mx-1.5 h-5 w-px shrink-0 bg-phantix-700/60" aria-hidden />;
 
 const BLOCK_OPTIONS = [
   { value: "p", label: "Paragraph" },
@@ -147,6 +180,9 @@ export default function RichMarkdownEditor({
   const [linkUrl, setLinkUrl] = useState("");
   const [active, setActive] = useState<ActiveState>(EMPTY_ACTIVE);
   const [fullscreen, setFullscreen] = useState(false);
+  const [imageSelected, setImageSelected] = useState(false);
+  const [tableOpen, setTableOpen] = useState(false);
+  const [tableSize, setTableSize] = useState({ rows: 3, cols: 3 });
   const isFill = fill || fullscreen;
 
   // Full screen: lock the page behind the overlay and leave on Escape.
@@ -174,6 +210,7 @@ export default function RichMarkdownEditor({
     el.innerHTML = markdownToHtml(value);
     lastEmitted.current = value;
     setEmpty(!value.trim());
+    setImageSelected(false);
   }, [value]);
 
   const emit = useCallback(() => {
@@ -184,6 +221,23 @@ export default function RichMarkdownEditor({
     setEmpty(!el.textContent?.trim() && !el.querySelector("img"));
     onChange(md);
   }, [onChange]);
+
+  // A figure whose file is gone must not linger as a broken image the writer
+  // cannot remove: drop it and update the stored body. `error` does not bubble,
+  // so listen in the capture phase on the editor root.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onError = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.tagName === "IMG") {
+        target.remove();
+        emit();
+      }
+    };
+    el.addEventListener("error", onError, true);
+    return () => el.removeEventListener("error", onError, true);
+  }, [emit]);
 
   // Track the format under the caret so the toolbar can show what is on.
   useEffect(() => {
@@ -202,6 +256,7 @@ export default function RichMarkdownEditor({
         link: Boolean(closestTag(anchor, "a", el)),
         ul: commandState("insertUnorderedList"),
         ol: commandState("insertOrderedList"),
+        table: Boolean(closestTag(anchor, "table", el)),
         block: block ? block.tagName.toLowerCase() : "p",
       });
     };
@@ -214,6 +269,85 @@ export default function RichMarkdownEditor({
     if (!el) return null;
     el.focus();
     return el;
+  };
+
+  const clearImageSelection = () => {
+    ref.current?.querySelectorAll("img.weekly-img-selected").forEach((n) => {
+      n.classList.remove("weekly-img-selected");
+    });
+    setImageSelected(false);
+  };
+
+  const deleteSelectedImage = () => {
+    const el = ref.current;
+    const img = el?.querySelector("img.weekly-img-selected");
+    if (!el || !img) return;
+    img.remove();
+    setImageSelected(false);
+    emit();
+  };
+
+  const currentCell = (): HTMLTableCellElement | null => {
+    const el = ref.current;
+    const sel = window.getSelection();
+    if (!el || !sel || sel.rangeCount === 0) return null;
+    return (closestTag(sel.anchorNode, "td", el) ??
+      closestTag(sel.anchorNode, "th", el)) as HTMLTableCellElement | null;
+  };
+
+  const insertTable = () => {
+    const rows = Math.max(1, Math.min(20, tableSize.rows || 1));
+    const cols = Math.max(1, Math.min(8, tableSize.cols || 1));
+    const head = `<tr>${Array.from({ length: cols }, (_, i) => `<th>Header ${i + 1}</th>`).join("")}</tr>`;
+    const body = Array.from(
+      { length: rows - 1 },
+      () => `<tr>${Array.from({ length: cols }, () => "<td></td>").join("")}</tr>`,
+    ).join("");
+    focus();
+    document.execCommand(
+      "insertHTML",
+      false,
+      `<table><thead>${head}</thead><tbody>${body}</tbody></table><p><br></p>`,
+    );
+    emit();
+    setTableOpen(false);
+  };
+
+  const modifyTable = (op: "addRow" | "addCol" | "delRow" | "delCol" | "delTable") => {
+    const el = ref.current;
+    const sel = window.getSelection();
+    const table =
+      el && sel ? (closestTag(sel.anchorNode, "table", el) as HTMLTableElement | null) : null;
+    const cell = currentCell();
+    if (!el || !table || !cell) return;
+    const row = cell.parentElement as HTMLTableRowElement;
+    const colIndex = Array.from(row.children).indexOf(cell);
+    if (op === "addRow") {
+      const isHeader = row.parentElement?.tagName === "THEAD";
+      const tr = document.createElement("tr");
+      for (let i = 0; i < row.children.length; i += 1) {
+        tr.appendChild(document.createElement(isHeader ? "th" : "td"));
+      }
+      row.after(tr);
+    } else if (op === "addCol") {
+      Array.from(table.rows).forEach((tr) => {
+        const isHeader =
+          tr.parentElement?.tagName === "THEAD" || tr.children[colIndex]?.tagName === "TH";
+        const newCell = document.createElement(isHeader ? "th" : "td");
+        const refCell = tr.children[colIndex];
+        if (refCell) refCell.after(newCell);
+        else tr.appendChild(newCell);
+      });
+    } else if (op === "delRow") {
+      row.remove();
+      if (table.rows.length === 0) table.remove();
+    } else if (op === "delCol") {
+      if ((table.rows[0]?.children.length ?? 0) <= 1) table.remove();
+      else Array.from(table.rows).forEach((tr) => tr.children[colIndex]?.remove());
+    } else {
+      table.remove();
+    }
+    emit();
   };
 
   const exec = (command: string, arg?: string) => {
@@ -326,6 +460,35 @@ export default function RichMarkdownEditor({
   );
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Backspace/Delete removes the selected figure, or the one the caret sits
+    // against, before the browser treats it as ordinary text.
+    if (e.key === "Backspace" || e.key === "Delete") {
+      const el = ref.current;
+      const sel = window.getSelection();
+      if (el && sel && sel.rangeCount) {
+        const selected = el.querySelector("img.weekly-img-selected");
+        if (selected) {
+          e.preventDefault();
+          selected.remove();
+          setImageSelected(false);
+          emit();
+          return;
+        }
+        const range = sel.getRangeAt(0);
+        if (range.collapsed) {
+          const img =
+            e.key === "Backspace"
+              ? imageAdjacent(range, "before")
+              : imageAdjacent(range, "after");
+          if (img) {
+            e.preventDefault();
+            img.remove();
+            emit();
+            return;
+          }
+        }
+      }
+    }
     const mod = e.metaKey || e.ctrlKey;
     if (!mod) return;
     const key = e.key.toLowerCase();
@@ -367,7 +530,7 @@ export default function RichMarkdownEditor({
       <div
         role="toolbar"
         aria-label="Formatting"
-        className="flex shrink-0 flex-wrap items-center gap-0.5 border-b border-phantix-700/50 bg-phantix-900/60 px-1.5 py-1"
+        className="flex shrink-0 flex-wrap items-center gap-1 border-b border-phantix-700/50 bg-phantix-900/60 px-2 py-1.5"
       >
         <ToolButton label="Undo (Ctrl/Cmd+Z)" onClick={() => exec("undo")} disabled={disabled}>
           <Undo2 size={15} />
@@ -441,12 +604,58 @@ export default function RichMarkdownEditor({
         >
           <ListOrdered size={15} />
         </ToolButton>
+        <ToolButton label="Indent" onClick={() => exec("indent")} disabled={disabled}>
+          <IndentIncrease size={15} />
+        </ToolButton>
+        <ToolButton label="Outdent" onClick={() => exec("outdent")} disabled={disabled}>
+          <IndentDecrease size={15} />
+        </ToolButton>
         <ToolButton label="Inline code" onClick={toggleCode} active={active.code} disabled={disabled}>
           <Code size={15} />
         </ToolButton>
         <ToolButton label="Divider" onClick={() => exec("insertHorizontalRule")} disabled={disabled}>
           <Minus size={15} />
         </ToolButton>
+        <ToolButton
+          label="Insert table"
+          onClick={() => setTableOpen((v) => !v)}
+          active={tableOpen}
+          disabled={disabled}
+        >
+          <Table2 size={15} />
+        </ToolButton>
+        {active.table ? (
+          <span className="ml-1 flex items-center gap-0.5 rounded-md border border-phantix-700/60 px-1">
+            {(
+              [
+                ["addRow", "Row +", "Add row below"],
+                ["addCol", "Col +", "Add column right"],
+                ["delRow", "Row −", "Delete row"],
+                ["delCol", "Col −", "Delete column"],
+              ] as const
+            ).map(([op, text, title]) => (
+              <button
+                key={op}
+                type="button"
+                title={title}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => modifyTable(op)}
+                className="rounded px-1.5 py-1 text-[11px] text-slate-400 hover:bg-phantix-800 hover:text-slate-100"
+              >
+                {text}
+              </button>
+            ))}
+            <button
+              type="button"
+              title="Delete table"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => modifyTable("delTable")}
+              className="rounded px-1.5 py-1 text-[11px] text-severity-critical hover:bg-phantix-800"
+            >
+              Delete
+            </button>
+          </span>
+        ) : null}
         <Divider />
         <ToolButton
           label="Link / remove link (Ctrl/Cmd+K)"
@@ -463,6 +672,11 @@ export default function RichMarkdownEditor({
             disabled={disabled || uploading}
           >
             {uploading ? <Loader2 size={15} className="animate-spin" /> : <ImagePlus size={15} />}
+          </ToolButton>
+        ) : null}
+        {imageSelected ? (
+          <ToolButton label="Delete figure (Backspace)" onClick={deleteSelectedImage} disabled={disabled}>
+            <Trash2 size={15} className="text-severity-critical" />
           </ToolButton>
         ) : null}
         <Divider />
@@ -507,6 +721,40 @@ export default function RichMarkdownEditor({
         </div>
       ) : null}
 
+      {tableOpen ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-phantix-700/40 bg-phantix-900/40 px-3 py-2 text-xs text-slate-400">
+          <Table2 size={14} className="shrink-0 text-slate-500" />
+          <label className="flex items-center gap-1.5">
+            Rows
+            <input
+              type="number"
+              min={1}
+              max={20}
+              className="input !w-16 !py-1 !text-xs"
+              value={tableSize.rows}
+              onChange={(e) => setTableSize({ ...tableSize, rows: Number(e.target.value) })}
+            />
+          </label>
+          <label className="flex items-center gap-1.5">
+            Columns
+            <input
+              type="number"
+              min={1}
+              max={8}
+              className="input !w-16 !py-1 !text-xs"
+              value={tableSize.cols}
+              onChange={(e) => setTableSize({ ...tableSize, cols: Number(e.target.value) })}
+            />
+          </label>
+          <button type="button" className="btn-primary !py-1 !text-xs" onClick={insertTable}>
+            Insert table
+          </button>
+          <button type="button" className="btn-ghost !py-1 !text-xs" onClick={() => setTableOpen(false)}>
+            Cancel
+          </button>
+        </div>
+      ) : null}
+
       <div className={cx("relative", isFill && "min-h-0 flex-1")}>
         <div
           ref={ref}
@@ -518,6 +766,16 @@ export default function RichMarkdownEditor({
           spellCheck
           onInput={emit}
           onBlur={emit}
+          onClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === "IMG") {
+              clearImageSelection();
+              target.classList.add("weekly-img-selected");
+              setImageSelected(true);
+            } else {
+              clearImageSelection();
+            }
+          }}
           onKeyDown={onKeyDown}
           onPaste={(e) => {
             const file = Array.from(e.clipboardData.items)

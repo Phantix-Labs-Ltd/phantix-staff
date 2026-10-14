@@ -78,8 +78,7 @@ function inlineMd(node: Node): string {
   return out;
 }
 
-/** A <ul>/<ol> -> Markdown, preserving one level of nesting. */
-function listMd(el: HTMLElement, depth = 0): string {
+/** A <ul>/<ol> -> Markdown, preserving one level of nesting. */function listMd(el: HTMLElement, depth = 0): string {
   const ordered = el.tagName.toLowerCase() === "ol";
   const lines: string[] = [];
   let index = 1;
@@ -95,6 +94,24 @@ function listMd(el: HTMLElement, depth = 0): string {
     index += 1;
   });
   return lines.join("\n");
+}
+
+/** A <table> -> a GFM pipe table, keeping the header row and alignment-free columns. */
+function tableMd(el: HTMLElement): string {
+  const table = el as HTMLTableElement;
+  const rows = Array.from(table.rows);
+  if (!rows.length) return "";
+  const cell = (c: HTMLTableCellElement) =>
+    inlineMd(c)
+      .trim()
+      .replace(/\|/g, "\\|")
+      .replace(/\s*\n\s*/g, " ");
+  const row = (r: HTMLTableRowElement) => `| ${Array.from(r.cells).map(cell).join(" | ")} |`;
+  const header = rows.find((r) => r.parentElement?.tagName === "THEAD") ?? rows[0];
+  const bodyRows = rows.filter((r) => r !== header);
+  const width = Math.max(...rows.map((r) => r.cells.length));
+  const separator = `| ${Array.from({ length: width }, () => "---").join(" | ")} |`;
+  return [row(header), separator, ...bodyRows.map(row)].join("\n");
 }
 
 /** A top-level element -> Markdown block. */
@@ -126,6 +143,8 @@ function blockMd(el: HTMLElement): string {
     case "ul":
     case "ol":
       return listMd(el);
+    case "table":
+      return tableMd(el);
     case "img":
       return `![${el.getAttribute("alt") ?? ""}](${el.getAttribute("src") ?? ""})`;
     case "figure":
