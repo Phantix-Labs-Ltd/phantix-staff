@@ -1025,6 +1025,16 @@ p {
 .weekly-paper .weekly-prose th,
 .weekly-paper .weekly-prose td { border-color: #e4e0d6; }
 .weekly-paper .weekly-prose th { background: #f1efe9; }
+/* The published article sets a drop cap on the opening paragraph. */
+.weekly-paper .weekly-prose > p:first-child::first-letter {
+  float: left;
+  margin: 0.06em 0.12em 0 0;
+  font-family: 'Space Grotesk', 'Geist Variable', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 3.9em;
+  line-height: 0.78;
+  color: #916a0e;
+}
 .weekly-kicker {
   font-family: 'Geist Mono Variable', ui-monospace, monospace;
   font-size: 0.72rem;
