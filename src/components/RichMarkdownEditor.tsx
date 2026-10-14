@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  Bold, Code, Heading2, Heading3, ImagePlus, Italic, Link2, List, ListOrdered,
-  Loader2, Maximize2, Minimize2, Minus, Pilcrow, Quote, Redo2, Strikethrough, Table2, Trash2, Undo2,
+  Bold, Code, Heading2, Heading3, ImagePlus, IndentDecrease, IndentIncrease, Italic,
+  Link2, List, ListOrdered, Loader2, Maximize2, Minimize2, Minus, Pilcrow, Quote, Redo2,
+  Strikethrough, Table2, Trash2, Undo2,
 } from "lucide-react";
 import { cx } from "@/lib/utils";
 import { htmlToMarkdown, markdownToHtml, readingStats } from "@/lib/markdown";
@@ -150,7 +151,7 @@ function ToolButton({
   );
 }
 
-const Divider = () => <span className="mx-1 h-5 w-px shrink-0 bg-phantix-700/60" aria-hidden />;
+const Divider = () => <span className="mx-1.5 h-5 w-px shrink-0 bg-phantix-700/60" aria-hidden />;
 
 const BLOCK_OPTIONS = [
   { value: "p", label: "Paragraph" },
@@ -529,7 +530,7 @@ export default function RichMarkdownEditor({
       <div
         role="toolbar"
         aria-label="Formatting"
-        className="flex shrink-0 flex-wrap items-center gap-0.5 border-b border-phantix-700/50 bg-phantix-900/60 px-1.5 py-1"
+        className="flex shrink-0 flex-wrap items-center gap-1 border-b border-phantix-700/50 bg-phantix-900/60 px-2 py-1.5"
       >
         <ToolButton label="Undo (Ctrl/Cmd+Z)" onClick={() => exec("undo")} disabled={disabled}>
           <Undo2 size={15} />
@@ -602,6 +603,12 @@ export default function RichMarkdownEditor({
           disabled={disabled}
         >
           <ListOrdered size={15} />
+        </ToolButton>
+        <ToolButton label="Indent" onClick={() => exec("indent")} disabled={disabled}>
+          <IndentIncrease size={15} />
+        </ToolButton>
+        <ToolButton label="Outdent" onClick={() => exec("outdent")} disabled={disabled}>
+          <IndentDecrease size={15} />
         </ToolButton>
         <ToolButton label="Inline code" onClick={toggleCode} active={active.code} disabled={disabled}>
           <Code size={15} />
