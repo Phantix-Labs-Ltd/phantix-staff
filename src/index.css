@@ -890,3 +890,140 @@ p {
     display: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * The Weekly — one article type system for the editor and the reader preview.
+ *
+ * `.weekly-prose` renders the same way in the contentEditable (WYSIWYG), the
+ * reader preview, and the public article, so what a writer formats is what a
+ * reader sees. `.weekly-paper` swaps the palette to the light reader theme for
+ * the preview.
+ * ───────────────────────────────────────────────────────────────────────────── */
+.weekly-prose {
+  font-family: 'Geist Variable', Inter, system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: inherit;
+  overflow-wrap: anywhere;
+}
+.weekly-prose > * + * { margin-top: 0.9em; }
+.weekly-prose p { margin: 0; }
+.weekly-prose h1,
+.weekly-prose h2,
+.weekly-prose h3,
+.weekly-prose h4 {
+  font-family: 'Space Grotesk', 'Geist Variable', system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  color: inherit;
+  margin: 0;
+}
+.weekly-prose h1 { font-size: 1.9em; }
+.weekly-prose h2 { font-size: 1.45em; }
+.weekly-prose h3 { font-size: 1.2em; }
+.weekly-prose h4 { font-size: 1.05em; }
+.weekly-prose blockquote {
+  border-left: 3px solid rgb(var(--gold-400));
+  padding-left: 1em;
+  font-style: italic;
+  opacity: 0.92;
+}
+.weekly-prose ul,
+.weekly-prose ol { padding-left: 1.4em; }
+.weekly-prose ul { list-style: disc; }
+.weekly-prose ol { list-style: decimal; }
+.weekly-prose li { margin: 0.25em 0; }
+.weekly-prose li::marker { color: rgb(var(--gold-400)); }
+.weekly-prose a {
+  color: rgb(var(--gold-300));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.weekly-prose code {
+  font-family: 'Geist Mono Variable', ui-monospace, monospace;
+  font-size: 0.88em;
+  background: rgb(var(--phantix-800) / 0.7);
+  border: 1px solid rgb(var(--phantix-700) / 0.5);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+.weekly-prose pre {
+  background: rgb(var(--phantix-950));
+  border: 1px solid rgb(var(--phantix-700) / 0.5);
+  border-radius: 8px;
+  padding: 0.9em 1em;
+  overflow-x: auto;
+}
+.weekly-prose pre code { background: none; border: 0; padding: 0; }
+.weekly-prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1.2em 0;
+}
+.weekly-prose hr {
+  border: 0;
+  border-top: 1px solid rgb(var(--phantix-700) / 0.6);
+  margin: 1.5em 0;
+}
+.weekly-prose strong { font-weight: 700; }
+.weekly-prose em { font-style: italic; }
+.weekly-prose s { text-decoration: line-through; opacity: 0.7; }
+.weekly-prose[contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: rgb(var(--slate-600));
+  pointer-events: none;
+}
+
+/* Reader preview: the light "paper" the public Weekly uses. */
+.weekly-paper {
+  background: #faf9f7;
+  color: #1c1a17;
+  box-shadow: 0 10px 40px -18px rgba(0, 0, 0, 0.55);
+}
+.weekly-paper .weekly-prose a { color: #916a0e; }
+.weekly-paper .weekly-prose li::marker { color: #b9820f; }
+.weekly-paper .weekly-prose blockquote { border-color: #d4a24e; }
+.weekly-paper .weekly-prose code {
+  background: #f1efe9;
+  border-color: #e4e0d6;
+  color: #3f3a30;
+}
+.weekly-paper .weekly-prose pre {
+  background: #f4f2ec;
+  border-color: #e4e0d6;
+}
+.weekly-paper .weekly-prose hr { border-color: #e4e0d6; }
+.weekly-kicker {
+  font-family: 'Geist Mono Variable', ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #916a0e;
+}
+.weekly-title {
+  font-family: 'Space Grotesk', 'Geist Variable', system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.7rem, 4.5vw, 2.6rem);
+  margin: 0.5rem 0 0;
+}
+.weekly-standfirst {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #e4e0d6;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #4b463c;
+}
+.weekly-byline {
+  margin-top: 1rem;
+  font-family: 'Geist Mono Variable', ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7a7468;
+}
