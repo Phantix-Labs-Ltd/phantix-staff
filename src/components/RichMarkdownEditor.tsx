@@ -355,11 +355,12 @@ export default function RichMarkdownEditor({
   return (
     <div
       className={cx(
-        "overflow-hidden rounded-lg border border-phantix-700/60 bg-phantix-950/50 focus-within:border-gold-400/40",
+        "overflow-hidden rounded-lg border border-phantix-700/60 focus-within:border-gold-400/40",
         isFill && "flex min-h-0 flex-col",
+        // Full screen is opaque: the page behind is not visible at all.
         fullscreen
-          ? "fixed inset-0 z-[80] rounded-none border-0"
-          : fill && "h-full",
+          ? "fixed inset-0 z-[80] rounded-none border-0 bg-phantix-950"
+          : cx("bg-phantix-950/50", fill && "h-full"),
       )}
     >
       {/* Toolbar */}
