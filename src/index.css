@@ -962,11 +962,37 @@ p {
   height: auto;
   border-radius: 8px;
   margin: 1.2em 0;
+  cursor: pointer;
+}
+.weekly-prose img:hover {
+  outline: 2px solid rgb(var(--gold-400) / 0.45);
+  outline-offset: 3px;
+}
+.weekly-prose img.weekly-img-selected {
+  outline: 2px solid rgb(var(--gold-400));
+  outline-offset: 3px;
 }
 .weekly-prose hr {
   border: 0;
   border-top: 1px solid rgb(var(--phantix-700) / 0.6);
   margin: 1.5em 0;
+}
+.weekly-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.3em 0;
+  font-size: 0.95em;
+}
+.weekly-prose th,
+.weekly-prose td {
+  border: 1px solid rgb(var(--phantix-700) / 0.6);
+  padding: 0.5em 0.7em;
+  text-align: left;
+  vertical-align: top;
+}
+.weekly-prose th {
+  background: rgb(var(--phantix-800) / 0.6);
+  font-weight: 600;
 }
 .weekly-prose strong { font-weight: 700; }
 .weekly-prose em { font-style: italic; }
@@ -996,6 +1022,9 @@ p {
   border-color: #e4e0d6;
 }
 .weekly-paper .weekly-prose hr { border-color: #e4e0d6; }
+.weekly-paper .weekly-prose th,
+.weekly-paper .weekly-prose td { border-color: #e4e0d6; }
+.weekly-paper .weekly-prose th { background: #f1efe9; }
 .weekly-kicker {
   font-family: 'Geist Mono Variable', ui-monospace, monospace;
   font-size: 0.72rem;
