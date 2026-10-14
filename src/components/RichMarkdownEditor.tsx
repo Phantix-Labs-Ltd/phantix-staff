@@ -27,6 +27,8 @@ interface Props {
   placeholder?: string;
   disabled?: boolean;
   minHeight?: number;
+  /** Fill the parent's height and scroll the body internally, pinning the toolbar. */
+  fill?: boolean;
   ariaLabel?: string;
 }
 
@@ -132,6 +134,7 @@ export default function RichMarkdownEditor({
   placeholder,
   disabled,
   minHeight = 440,
+  fill = false,
   ariaLabel = "Post body",
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -333,12 +336,17 @@ export default function RichMarkdownEditor({
   const stats = readingStats(value);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-phantix-700/60 bg-phantix-950/50 focus-within:border-gold-400/40">
+    <div
+      className={cx(
+        "overflow-hidden rounded-lg border border-phantix-700/60 bg-phantix-950/50 focus-within:border-gold-400/40",
+        fill && "flex h-full min-h-0 flex-col",
+      )}
+    >
       {/* Toolbar */}
       <div
         role="toolbar"
         aria-label="Formatting"
-        className="flex flex-wrap items-center gap-0.5 border-b border-phantix-700/50 bg-phantix-900/60 px-1.5 py-1"
+        className="flex shrink-0 flex-wrap items-center gap-0.5 border-b border-phantix-700/50 bg-phantix-900/60 px-1.5 py-1"
       >
         <ToolButton label="Undo (Ctrl/Cmd+Z)" onClick={() => exec("undo")} disabled={disabled}>
           <Undo2 size={15} />
@@ -443,7 +451,7 @@ export default function RichMarkdownEditor({
       </div>
 
       {linkOpen ? (
-        <div className="flex items-center gap-2 border-b border-phantix-700/40 bg-phantix-900/40 px-3 py-2">
+        <div className="flex shrink-0 items-center gap-2 border-b border-phantix-700/40 bg-phantix-900/40 px-3 py-2">
           <Link2 size={14} className="shrink-0 text-slate-500" />
           <input
             autoFocus
@@ -469,7 +477,7 @@ export default function RichMarkdownEditor({
         </div>
       ) : null}
 
-      <div className="relative">
+      <div className={cx("relative", fill && "min-h-0 flex-1")}>
         <div
           ref={ref}
           role="textbox"
@@ -513,8 +521,9 @@ export default function RichMarkdownEditor({
           className={cx(
             "weekly-prose w-full px-6 py-5 outline-none",
             disabled && "opacity-60",
+            fill && "h-full overflow-y-auto",
           )}
-          style={{ minHeight }}
+          style={fill ? undefined : { minHeight }}
         />
         {empty ? (
           <p className="pointer-events-none absolute left-6 top-5 max-w-[90%] text-[15px] leading-7 text-slate-600">
