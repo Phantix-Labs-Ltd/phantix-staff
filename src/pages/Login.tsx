@@ -6,6 +6,7 @@ import { useStore } from "@/lib/store";
 import { DEMO_MODE, ApiError, throttleSeconds } from "@/lib/api";
 import { BrandWordmark } from "@/components/BrandLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import SubstackSubscribe from "@/components/SubstackSubscribe";
 
 export default function Login() {
   const { session, login } = useStore();
@@ -141,6 +142,7 @@ export default function Login() {
           <p className="mt-3 text-center text-xs">
             <Link to="/password-reset" className="text-slate-500 hover:text-slate-300">Forgot password?</Link>
           </p>
+          <SubstackSubscribe source="staff-signin" />
         </form>
 
         <p className="text-center text-xs text-slate-500 mt-6">
