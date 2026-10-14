@@ -426,7 +426,8 @@ export default function WeeklyEditor() {
   const status = draft.status ?? "draft";
 
   return (
-    <div>
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="shrink-0">
       <PageHeader
         title={isNew ? "New post" : draft.title || "Untitled post"}
         description={
@@ -488,9 +489,10 @@ export default function WeeklyEditor() {
           </>
         }
       />
+      </div>
 
       {/* Status + collaboration bar */}
-      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-phantix-700/50 bg-phantix-950/50 px-3 py-2 text-xs">
+      <div className="mb-4 flex shrink-0 flex-wrap items-center gap-3 rounded-lg border border-phantix-700/50 bg-phantix-950/50 px-3 py-2 text-xs">
         <StatusChip status={status} />
         <span className="font-mono text-slate-500">r{baseRevision}</span>
         <span className="text-slate-500">
@@ -521,7 +523,7 @@ export default function WeeklyEditor() {
       </div>
 
       {conflict !== null ? (
-        <div className="mb-4 rounded-lg border border-severity-high/40 bg-severity-high/10 px-3 py-2.5 text-[13px] text-severity-high">
+        <div className="mb-4 shrink-0 rounded-lg border border-severity-high/40 bg-severity-high/10 px-3 py-2.5 text-[13px] text-severity-high">
           <p className="font-semibold">Another editor saved a newer revision (r{conflict}).</p>
           <p className="mt-0.5 text-severity-high/80">
             Your edits are still here. Load their version to merge by hand, or overwrite it with yours.
@@ -545,11 +547,11 @@ export default function WeeklyEditor() {
         </div>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_330px]">
+      <div className="grid min-h-0 flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_330px]">
         {/* Writing column */}
-        <div className="min-w-0 space-y-4">
-          <Card className="space-y-4">
-            <div>
+        <div className="flex min-h-0 min-w-0 flex-col">
+          <Card className="flex min-h-0 flex-1 flex-col gap-4">
+            <div className="shrink-0">
               <label className="label" htmlFor="w-title">Title</label>
               <input
                 id="w-title"
@@ -562,7 +564,7 @@ export default function WeeklyEditor() {
                 placeholder="Proof Before Panic"
               />
             </div>
-            <div>
+            <div className="shrink-0">
               <label className="label" htmlFor="w-excerpt">
                 Standfirst <span className="font-normal normal-case text-slate-500">({draft.excerpt.length}/600)</span>
               </label>
@@ -576,28 +578,30 @@ export default function WeeklyEditor() {
               />
             </div>
 
-            <div>
-              <div className="mb-1.5 flex items-center justify-between">
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="mb-1.5 flex shrink-0 items-center justify-between">
                 <span className="label !mb-0">Body</span>
                 <span className="text-[12px] text-slate-500">
                   {preview ? "Reader preview" : "Rich text"} · {draft.body.length.toLocaleString()} characters
                 </span>
               </div>
               {preview ? (
-                <ReaderPreview
-                  title={draft.title}
-                  kicker={draft.kicker}
-                  excerpt={draft.excerpt}
-                  body={draft.body}
-                  contributors={contributors}
-                  date={draft.date}
-                />
+                <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                  <ReaderPreview
+                    title={draft.title}
+                    kicker={draft.kicker}
+                    excerpt={draft.excerpt}
+                    body={draft.body}
+                    contributors={contributors}
+                    date={draft.date}
+                  />
+                </div>
               ) : (
                 <RichMarkdownEditor
+                  fill
                   value={draft.body}
                   onChange={(body) => markDirty({ body })}
                   onUploadImage={uploadInlineImage}
-                  minHeight={460}
                   placeholder={"Start writing. Use the toolbar for a heading, a quote, a list, a link or an image — or drag an image in."}
                 />
               )}
@@ -606,7 +610,7 @@ export default function WeeklyEditor() {
         </div>
 
         {/* Right rail: settings + collaboration panels */}
-        <aside className="space-y-4">
+        <aside className="min-h-0 space-y-4 overflow-y-auto pr-1">
           <Card className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Post settings</p>
             <div className="grid grid-cols-2 gap-3">

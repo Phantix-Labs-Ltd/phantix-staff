@@ -22,7 +22,6 @@ import { useDismiss } from "@/lib/useDismiss";
 import CommandPalette, { type PaletteItem } from "@/components/CommandPalette";
 import { StaffMoreSheet, StaffTabBar, useStaffTitle } from "@/components/StaffMobileShell";
 import { useTableCards } from "@/lib/useTableCards";
-import { onSignedIn } from "@/lib/analytics";
 
 type NavLeafItem = {
   to: string;
@@ -333,11 +332,6 @@ export default function Layout() {
   const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent);
   const shortcutLabel = isMac ? "⌘K" : "Ctrl K";
 
-  // Staff are signed in, so the portal asks no cookie question.
-  useEffect(() => {
-    if (session?.authenticated) onSignedIn();
-  }, [session?.authenticated]);
-
   // Ctrl/⌘+K anywhere opens the palette — the nav is too deep to hunt through.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -351,6 +345,9 @@ export default function Layout() {
   }, []);
 
   const location = useLocation();
+  // `/weekly/new` and `/weekly/:id` are the full-height editor; the inventory,
+  // Issues and Masthead pages scroll normally.
+  const editorRoute = /^\/weekly\/(new|\d+)$/.test(location.pathname);
   // The role-filtered groups, shared by the sidebar, the mobile menu and search.
   const sections = useMemo(
     () => visibleNavSections({ isAdmin, isEditor, isSuperadmin, isContributor, isAgiAdmin }),
@@ -624,10 +621,22 @@ export default function Layout() {
         )}
 
         {/* Page content */}
-        <main ref={setMainEl} className="min-w-0 flex-1 overflow-y-auto p-3 pb-[calc(88px+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(88px+env(safe-area-inset-bottom))] md:pb-4 lg:p-6">
+        <main
+          ref={setMainEl}
+          className={cx(
+            "min-w-0 flex-1 overflow-y-auto p-3 pb-[calc(88px+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(88px+env(safe-area-inset-bottom))] md:pb-4 lg:p-6",
+            // The editor owns its scroll: fill the viewport and scroll the body.
+            editorRoute && "flex min-h-0 flex-col",
+          )}
+        >
           {/* The one content measure for this app: 7xl left wide staff tables
               cramped while their rows scrolled off the bottom. */}
-          <div className="mx-auto w-full max-w-[1600px]">
+          <div
+            className={cx(
+              "mx-auto w-full max-w-[1600px]",
+              editorRoute && "flex min-h-0 flex-1 flex-col",
+            )}
+          >
             {/* A page that crashes shows a recovery card; the chrome stays. */}
             <PageErrorBoundary resetKey={location.pathname}>
               <Outlet />
