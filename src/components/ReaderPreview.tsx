@@ -24,6 +24,7 @@ export default function ReaderPreview({
   kicker,
   excerpt,
   body,
+  html,
   contributors,
   date,
 }: {
@@ -31,11 +32,14 @@ export default function ReaderPreview({
   kicker?: string | null;
   excerpt?: string;
   body: string;
+  /** Stored rendering (exact spacing); falls back to Markdown when absent. */
+  html?: string;
   contributors?: BlogContributor[];
   date?: string;
 }) {
   const [device, setDevice] = useState<Device>("desktop");
-  const html = useMemo(() => markdownToHtml(body), [body]);
+  const fromMarkdown = useMemo(() => markdownToHtml(body), [body]);
+  const rendered = html && html.trim() ? html : fromMarkdown;
   const current = DEVICES.find((d) => d.id === device) ?? DEVICES[0];
   const names = (contributors ?? []).map((c) => c.name).filter(Boolean);
 
@@ -75,7 +79,7 @@ export default function ReaderPreview({
               {names.length ? names.join(", ") : "SecureGraph editorial team"}
               {date ? ` · ${date}` : ""}
             </p>
-            <div className="weekly-prose mt-8" dangerouslySetInnerHTML={{ __html: html }} />
+            <div className="weekly-prose mt-8" dangerouslySetInnerHTML={{ __html: rendered }} />
           </article>
         </div>
       </div>
