@@ -4,7 +4,7 @@ import PageErrorBoundary from "@/components/PageErrorBoundary";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   LayoutDashboard, Shield, Building2, MessageSquare, MessageSquareWarning, Server, Brain,
-  Users, FileCheck, Wrench, Search, Activity, LogOut, Menu, X,
+  Users, FileCheck, Wrench, Search, Activity, LogOut,
   Zap, Globe, AlertTriangle, ScanLine, BarChart3, RefreshCw,
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
   ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronRight, Newspaper,
@@ -313,7 +313,6 @@ function NavGroup({
 export default function Layout() {
   const { session, logout, isAdmin, isEditor, isSuperadmin, isAgiAdmin, isContributor } = useStore();
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const { collapsed, toggle: toggleSidebar } = useSidebarCollapsed();
   // The launcher and account menus close on a press outside them or on Escape.
@@ -388,7 +387,6 @@ export default function Layout() {
             return next;
           })
         }
-        onNavigate={mobile ? () => setMenuOpen(false) : undefined}
         mobile={mobile}
       />
     ));
@@ -487,16 +485,6 @@ export default function Layout() {
       <div className={cx("flex min-w-0 flex-1 flex-col overflow-hidden", collapsed ? "lg:ml-[72px]" : "lg:ml-[248px]")}>
         {/* Topbar */}
         <header className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-phantix-700/30 bg-phantix-950/60 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-xl lg:px-6">
-          {/* Phones navigate with the bottom tab bar; the dropdown stays for tablets. */}
-          <button
-            className="hidden rounded-lg p-2 text-slate-400 hover:bg-phantix-800/70 hover:text-white md:block lg:hidden"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-          >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-
           <div className="flex shrink-0 items-center gap-2">
             {/* Launcher: open the product apps. Phones open them from the More sheet. */}
             <div ref={launcherRef} className="relative hidden md:block">
@@ -597,34 +585,11 @@ export default function Layout() {
           </div>
         </header>
 
-        {/* Mobile menu */}
-        {menuOpen && (
-          <div
-            className="fixed inset-x-0 bottom-0 top-16 z-40 hidden bg-black/75 backdrop-blur-sm md:block lg:hidden"
-            onClick={() => setMenuOpen(false)}
-            aria-hidden="true"
-          />
-        )}
-        {menuOpen && (
-          // Tablets only: an opaque, raised panel over the dimmed page.
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-0 top-16 z-50 hidden max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-phantix-600/60 bg-[rgb(var(--surface-card))] shadow-2xl md:block lg:hidden"
-          >
-            <nav className="px-4 py-4 space-y-0.5">
-              {renderNav(true)}
-            </nav>
-          </motion.div>
-        )}
-
         {/* Page content */}
         <main
           ref={setMainEl}
           className={cx(
-            "min-w-0 flex-1 overflow-y-auto p-3 pb-[calc(88px+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(88px+env(safe-area-inset-bottom))] md:pb-4 lg:p-6",
+            "min-w-0 flex-1 overflow-y-auto p-3 pb-[calc(88px+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(88px+env(safe-area-inset-bottom))] lg:p-6",
             // The editor owns its scroll: fill the viewport and scroll the body.
             editorRoute && "flex min-h-0 flex-col",
           )}
@@ -644,7 +609,7 @@ export default function Layout() {
           </div>
         </main>
 
-        <footer className="hidden shrink-0 flex-wrap items-center justify-between gap-2 border-t border-phantix-700/60 bg-phantix-950/60 px-4 py-3 text-[13px] text-slate-400 md:flex lg:px-6">
+        <footer className="hidden shrink-0 flex-wrap items-center justify-between gap-2 border-t border-phantix-700/60 bg-phantix-950/60 px-4 py-3 text-[13px] text-slate-400 lg:flex lg:px-6">
           <span>SecureGraph Staff Portal · internal admin &amp; support console · every action is audited</span>
           <span className="font-mono">API v1 · staff-only</span>
         </footer>
