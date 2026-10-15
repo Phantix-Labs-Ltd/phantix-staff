@@ -306,10 +306,11 @@ export default function DevLogs() {
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
           <input className="input w-48 py-1.5 pl-8 text-xs" placeholder="Search message or issue" value={q} onChange={e => setQ(e.target.value)} />
         </div>
-        <div className="flex items-center gap-1.5">
+        {/* Phones: the range takes its own row and each end shares it evenly. */}
+        <div className="flex w-full items-center gap-1.5 sm:w-auto">
           <input
             type="datetime-local"
-            className="input w-auto py-1.5 text-xs"
+            className="input min-w-0 flex-1 py-1.5 text-xs sm:w-auto sm:flex-none"
             value={fromTs}
             max={toTs || undefined}
             onChange={e => setFromTs(e.target.value)}
@@ -318,7 +319,7 @@ export default function DevLogs() {
           <span className="text-xs text-slate-600">→</span>
           <input
             type="datetime-local"
-            className="input w-auto py-1.5 text-xs"
+            className="input min-w-0 flex-1 py-1.5 text-xs sm:w-auto sm:flex-none"
             value={toTs}
             min={fromTs || undefined}
             onChange={e => setToTs(e.target.value)}

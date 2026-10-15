@@ -495,9 +495,9 @@ export default function InternalAlerts() {
               ))}
             </div>
             {!data.milestone_cross_db_enabled && (
-              <p className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-                <ShieldCheck size={13} /> Scans/findings counts are disabled server-side
-                (<span className="font-mono">STAFF_ALERT_MILESTONE_CROSS_DB_ENABLED</span>); orgs and users are live.
+              <p className="mt-3 text-xs leading-5 text-slate-500">
+                <ShieldCheck size={13} className="mr-1.5 inline align-[-2px]" /> Scans/findings counts are disabled server-side
+                (<span className="break-all font-mono">STAFF_ALERT_MILESTONE_CROSS_DB_ENABLED</span>); orgs and users are live.
               </p>
             )}
           </>
