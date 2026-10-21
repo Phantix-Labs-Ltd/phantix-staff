@@ -10,6 +10,7 @@ import Cookies from "@/pages/Cookies";
 import { BrandLoader } from "@/components/BrandLoader";
 import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/admin/Clients";
+import Mssp from "@/pages/admin/Mssp";
 import SupportTickets from "@/pages/admin/Support";
 import SearchPage from "@/pages/admin/Search";
 import ServerOps from "@/pages/admin/ServerOps";
@@ -153,6 +154,7 @@ export default function App() {
             {/* Admin (monitor + catalogs + advanced) */}
             <Route path="/clients" element={<RequireAdmin><Clients /></RequireAdmin>} />
             <Route path="/clients/:id" element={<RequireAdmin><Clients /></RequireAdmin>} />
+            <Route path="/mssp" element={<RequireAdmin><Mssp /></RequireAdmin>} />
             <Route path="/sandbox" element={<RequireAdmin><SandboxAdmin /></RequireAdmin>} />
             <Route path="/waitlist" element={<RequireAdmin><WaitlistAdmin /></RequireAdmin>} />
             <Route path="/logs" element={<RequireAdmin><DevLogs /></RequireAdmin>} />
