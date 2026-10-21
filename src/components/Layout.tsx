@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import PageErrorBoundary from "@/components/PageErrorBoundary";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
-  LayoutDashboard, Shield, Building2, MessageSquare, MessageSquareWarning, Server, Brain,
+  LayoutDashboard, Shield, Building2, Handshake, MessageSquare, MessageSquareWarning, Server, Brain,
   Users, FileCheck, Wrench, Search, Activity, LogOut,
   Zap, Globe, AlertTriangle, ScanLine, BarChart3, RefreshCw,
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
@@ -57,6 +57,7 @@ const navSections: NavGroupDef[] = [
       { to: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
       { to: "/search", label: "Search", icon: <Search size={18} /> },
       { to: "/clients", label: "Clients", icon: <Building2 size={18} />, adminOnly: true },
+      { to: "/mssp", label: "MSSP", icon: <Handshake size={18} />, adminOnly: true },
       { to: "/sandbox", label: "Sandbox", icon: <FlaskConical size={18} />, adminOnly: true },
       { to: "/waitlist", label: "Waitlist", icon: <ListOrdered size={18} />, adminOnly: true },
       { to: "/support", label: "Support", icon: <MessageSquare size={18} /> },
