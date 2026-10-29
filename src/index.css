@@ -912,7 +912,7 @@ p {
 .weekly-prose h2,
 .weekly-prose h3,
 .weekly-prose h4 {
-  font-family: 'Space Grotesk', 'Geist Variable', system-ui, sans-serif;
+  font-family: 'Space Grotesk Variable', 'Geist Variable', system-ui, sans-serif;
   font-weight: 700;
   line-height: 1.18;
   letter-spacing: -0.01em;
@@ -1029,7 +1029,7 @@ p {
 .weekly-paper .weekly-prose > p:first-child::first-letter {
   float: left;
   margin: 0.06em 0.12em 0 0;
-  font-family: 'Space Grotesk', 'Geist Variable', system-ui, sans-serif;
+  font-family: 'Space Grotesk Variable', 'Geist Variable', system-ui, sans-serif;
   font-weight: 700;
   font-size: 3.9em;
   line-height: 0.78;
@@ -1043,7 +1043,7 @@ p {
   color: #916a0e;
 }
 .weekly-title {
-  font-family: 'Space Grotesk', 'Geist Variable', system-ui, sans-serif;
+  font-family: 'Space Grotesk Variable', 'Geist Variable', system-ui, sans-serif;
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.02em;

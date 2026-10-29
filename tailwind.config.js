@@ -48,7 +48,7 @@ export default {
         black: "rgb(var(--color-black) / <alpha-value>)",
       },
       fontFamily: {
-        display: ["'Space Grotesk'", "'Geist Variable'", "system-ui", "sans-serif"],
+        display: ["'Space Grotesk Variable'", "'Geist Variable'", "system-ui", "sans-serif"],
         sans: ["'Geist Variable'", "Inter", "system-ui", "sans-serif"],
         mono: ["'Geist Mono Variable'", "'JetBrains Mono'", "ui-monospace", "monospace"],
       },

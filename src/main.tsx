@@ -8,6 +8,7 @@ import { bootstrapTheme } from "./lib/theme";
 // so the app never flashes a fallback face.
 import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
+import "@fontsource-variable/space-grotesk";
 import { initAnalytics } from "./lib/analytics";
 import { loadBrandTokens } from "./lib/branding";
 import "./index.css";
