@@ -140,7 +140,7 @@ export default function SuperadminTerminal() {
     const term = new XTerm({
       cursorBlink: true,
       convertEol: true,
-      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+      fontFamily: "'Geist Mono Variable', ui-monospace, monospace",
       fontSize: 13,
       theme: {
         background: "#0B1026",
