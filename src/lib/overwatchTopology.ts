@@ -139,7 +139,7 @@ export const UNITS: TopologyUnit[] = [
     "kind": "gateway",
     "boundary": "edge",
     "replicas": 1,
-    "note": "Router Host(staging.phantix.site) -> api:8000, tls letsencrypt, gzip + redirect-to-https middleware"
+    "note": "Router Host(<api-host>) -> api:8000, tls letsencrypt, gzip + redirect-to-https middleware"
   },
   {
     "id": "coolify",
