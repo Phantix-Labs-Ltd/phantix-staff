@@ -9,9 +9,9 @@ import type { BillingSettings, PricingPreview } from "@/lib/types";
 import {
   type CreditMeteringMap,
   formatAiNgn,
-  formatCredits,
   FX_NGN_PER_USD,
 } from "@/lib/billingMetering";
+import { CreditsAcrossOrgsCard, MeteringCard } from "@/components/AiCreditPanels";
 
 interface GatewayStatus { configured: boolean; test_mode: boolean; public_key_prefix: string; secret_key_configured: boolean; callback_url: string; environment: string; }
 interface CouponItem { id: number; label: string; code: string; duration_days: number; max_redemptions: number | null; redemption_count: number; remaining_redemptions: number | null; is_active: boolean; notes: string | null; created_at: string; }
@@ -52,22 +52,28 @@ const demoMetering: CreditMeteringMap = {
   fx: { ngn_per_usd: FX_NGN_PER_USD },
   credit_ngn: 1.5,
   credit_usd: 0.001,
-  plan_ai_ngn_mo: { free: 0, starter: 7500, growth: 30000 },
-  plan_ai_usd_mo: { free: 0, starter: 5, growth: 20 },
-  plan_credits_mo: { free: 0, starter: 5000, growth: 20000, enterprise: "custom" },
-  clusters: { economy_security: ["deepseek", "zai", "glm-4-flash"], economy_general: ["qwen-turbo"] },
-  ngn_per_1m_tokens: { "deepseek-v4-flash": 315, "glm-4-flash": 150, "qwen-turbo": 225, "gpt-4o": 7500 },
-  usd_per_1m_tokens: { "deepseek-v4-flash": 0.21, "glm-4-flash": 0.1 },
-  multipliers_vs_deepseek_flash: { "deepseek-v4-flash": 1, "glm-4-flash": 0.48, "qwen-turbo": 0.71, "gpt-4o": 23.81 },
+  plan_ai_ngn_mo: { free: 0, starter: 7500, growth: 15000 },
+  plan_ai_usd_mo: { free: 0, starter: 5, growth: 10 },
+  plan_credits_mo: { free: 0, starter: 5000, growth: 10000, enterprise: "custom" },
+  clusters: { economy_security: ["deepseek", "zai", "glm-5.3-flash", "minimax-m3"], economy_general: ["qwen-turbo"] },
+  ngn_per_1m_tokens: { "deepseek-v4-flash": 315, "glm-5.3-flash": 150, "qwen-turbo": 225, "gpt-4o": 7500 },
+  usd_per_1m_tokens: { "deepseek-v4-flash": 0.21, "glm-5.3-flash": 0.1 },
+  multipliers_vs_deepseek_flash: { "deepseek-v4-flash": 1, "glm-5.3-flash": 0.48, "qwen-turbo": 0.71, "gpt-4o": 23.81 },
+  providers: [
+    { model: "deepseek-v4-flash", provider: "deepseek", provider_label: "DeepSeek", usd_per_1m: 0.21, ngn_per_1m: 315, credits_per_1m: 210, multiplier_vs_deepseek_flash: 1, security_role: "primary" },
+    { model: "glm-5.3-flash", provider: "zhipu", provider_label: "Z.AI (GLM)", usd_per_1m: 0.1, ngn_per_1m: 150, credits_per_1m: 100, multiplier_vs_deepseek_flash: 0.48, security_role: "fallback" },
+    { model: "gpt-4o", provider: "openai", provider_label: "OpenAI", usd_per_1m: 5, ngn_per_1m: 7500, credits_per_1m: 5000, multiplier_vs_deepseek_flash: 23.81, security_role: null },
+  ],
   security_providers: {
     primary: "deepseek",
-    primary_model: "deepseek-v4-flash",
+    primary_model: "deepseek-flash",
     fallback: "zhipu",
-    fallback_model: "glm-4-flash",
+    fallback_model: "glm-5.3-flash",
+    fallback_models: ["glm-5.3-flash", "MiniMax-M3"],
     user_choice: false,
-    note: "Pentest, AGI, and security agents use DeepSeek only; Z.AI GLM Flash is automatic fallback.",
+    note: "Pentest, AGI, and security agents use DeepSeek first; Z.AI GLM 5.3 Flash and MiniMax M3 are automatic fallbacks.",
   },
-  metering_note: "1 credit = ₦1.50 of LLM spend (FX ₦1,500/USD). Starter ≈ ₦7,500/mo; Growth ≈ ₦30,000/mo.",
+  metering_note: "1 credit = ₦1.50 of LLM spend (FX ₦1,500/USD). Starter includes ~₦7,500/mo of tokens (5,000 credits); Growth ~₦15,000/mo (10,000 credits).",
 };
 
 export default function BillingAdmin() {
@@ -216,7 +222,7 @@ export default function BillingAdmin() {
                     ["AI", [
                       ["AI Starter (NGN/mo)", formatAiNgn(metering?.plan_ai_ngn_mo?.starter)],
                       ["AI Growth (NGN/mo)", formatAiNgn(metering?.plan_ai_ngn_mo?.growth)],
-                      ["1 AI credit", metering ? `₦${metering.credit_ngn}` : "Not set"],
+                      ["1 AI credit", metering ? `₦${metering.credit_ngn.toFixed(2)}` : "Not set"],
                     ]],
                   ] as const).map(([group, rows]) => (
                     <div key={group}>
@@ -234,19 +240,8 @@ export default function BillingAdmin() {
                 </div>
               </Card>
               {extraLoading && !metering && <TableSkeleton rows={3} />}
-              {metering && (
-                <CollapsibleCard defaultOpen={false} title="AI credit metering" subtitle={`FX ₦${metering.fx?.ngn_per_usd ?? FX_NGN_PER_USD}/USD · ${formatCredits(metering.plan_credits_mo?.starter)} of ${formatCredits(metering.plan_credits_mo?.growth)} credits`}>
-                  <p className="text-xs text-slate-400 mb-3">{metering.metering_note}</p>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div><span className="text-slate-400">Security primary:</span> <span className="font-mono text-xs text-slate-200">{metering.security_providers?.primary_model}</span></div>
-                    <div><span className="text-slate-400">Fallback:</span> <span className="font-mono text-xs text-slate-200">{metering.security_providers?.fallback_model} (Z.AI)</span></div>
-                    <div><span className="text-slate-400">User choice:</span> <span className="text-slate-300">{metering.security_providers?.user_choice ? "Yes" : "No"}</span></div>
-                    <div><span className="text-slate-400">DeepSeek ×1M:</span> <span className="font-mono text-xs text-slate-300">{formatAiNgn(metering.ngn_per_1m_tokens?.["deepseek-v4-flash"])}</span></div>
-                    <div><span className="text-slate-400">GLM Flash ×1M:</span> <span className="font-mono text-xs text-slate-300">{formatAiNgn(metering.ngn_per_1m_tokens?.["glm-4-flash"])}</span></div>
-                    <div><span className="text-slate-400">GPT-4o ×1M:</span> <span className="font-mono text-xs text-slate-300">{formatAiNgn(metering.ngn_per_1m_tokens?.["gpt-4o"])}</span></div>
-                  </div>
-                </CollapsibleCard>
-              )}
+              {metering && <MeteringCard metering={metering} />}
+              {!DEMO_MODE && <CreditsAcrossOrgsCard />}
             </>
           )}
           <Modal open={showPriceChange} onClose={() => setShowPriceChange(false)} title="Change Tier Pricing (NGN)">
