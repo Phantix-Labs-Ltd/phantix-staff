@@ -7,6 +7,7 @@ import {
 import { Card, Modal, PageHeader, PageSkeleton } from "@/components/ui";
 import ReaderPreview from "@/components/ReaderPreview";
 import RichMarkdownEditor from "@/components/RichMarkdownEditor";
+import WeeklyGuidelines from "@/pages/admin/WeeklyGuidelines";
 import { api, ApiError } from "@/lib/api";
 import { useResource } from "@/lib/useResource";
 import { useStore } from "@/lib/store";
@@ -616,6 +617,7 @@ export default function WeeklyEditor() {
 
         {/* Right rail: settings + collaboration panels */}
         <aside className="min-h-0 space-y-4 overflow-y-auto pr-1">
+          <WeeklyGuidelines draft={draft} />
           <Card className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Post settings</p>
             <div className="grid grid-cols-2 gap-3">
