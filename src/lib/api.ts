@@ -2,6 +2,46 @@
 import { API_BASE as CONFIG_API_BASE, AGI_ENABLED as AGI_FLAG } from "./config";
 import { dedupedRequest } from "./dedupe";
 
+// ── MSSP acting session (X-Act-For) ──────────────────────────────────────────
+// An analyst enters a client's account with POST /mssp/delegations/{id}/enter,
+// which mints a short-lived acting token. It is held for the tab's lifetime only
+// and sent as X-Act-For; the backend resolves it to the *client* organization and
+// re-verifies the live grant on every request, so a revocation takes effect
+// immediately even if this tab is still open.
+export type ActingSession = {
+  token: string;
+  clientOrgId: number;
+  clientOrgName?: string;
+  application: string;
+  expiresAt?: string;
+};
+
+const ACTING_KEY = "sg.mssp.acting";
+
+export function getActingSession(): ActingSession | null {
+  try {
+    const raw = sessionStorage.getItem(ACTING_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as ActingSession;
+    if (!parsed?.token) return null;
+    if (parsed.expiresAt && Date.parse(parsed.expiresAt) <= Date.now()) {
+      sessionStorage.removeItem(ACTING_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function startActingSession(session: ActingSession): void {
+  sessionStorage.setItem(ACTING_KEY, JSON.stringify(session));
+}
+
+export function clearActingSession(): void {
+  sessionStorage.removeItem(ACTING_KEY);
+}
+
 export const API_BASE = CONFIG_API_BASE;
 export const DEMO_MODE = false;
 export const AGI_ENABLED = AGI_FLAG;
@@ -200,6 +240,9 @@ async function request<T>(
 
   if (tokens.staff) {
     headers["Authorization"] = `Bearer ${tokens.staff}`;
+
+  const acting = getActingSession();
+  if (acting) headers["X-Act-For"] = acting.token;
   }
 
   let url = `${API_BASE}${path}`;
