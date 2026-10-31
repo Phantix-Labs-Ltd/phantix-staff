@@ -9,12 +9,13 @@ import {
   Crosshair, Radio, FileText, TerminalSquare, Radar, BookOpen, FlaskConical,
   ScrollText, Mail, Layers, Inbox, Sparkles, FileCode2, ChevronRight, Newspaper,
   BellRing, ListOrdered, Grip, LayoutGrid, PanelLeftClose, PanelLeftOpen, UserRound,
-  Plus, FolderOpen, Settings2,
+  Plus, FolderOpen, Settings2, ShieldCheck,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { APP_URL, PLATFORM_URL } from "@/lib/links";
 import { cx } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { NotificationBell } from "@/components/NotificationBell";
 import { AGI_ENABLED } from "@/lib/api";
 import { BrandMark, BrandWordmark } from "@/components/BrandLogo";
 import { useSidebarCollapsed } from "@/lib/useSidebarCollapsed";
@@ -61,6 +62,7 @@ const navSections: NavGroupDef[] = [
       { to: "/sandbox", label: "Sandbox", icon: <FlaskConical size={18} />, adminOnly: true },
       { to: "/waitlist", label: "Waitlist", icon: <ListOrdered size={18} />, adminOnly: true },
       { to: "/support", label: "Support", icon: <MessageSquare size={18} /> },
+      { to: "/privacy-requests", label: "Data requests", icon: <ShieldCheck size={18} />, adminOnly: true },
     ],
   },
   {
@@ -485,7 +487,7 @@ export default function Layout() {
       {/* Main area */}
       <div className={cx("flex min-w-0 flex-1 flex-col overflow-hidden", collapsed ? "lg:ml-[72px]" : "lg:ml-[248px]")}>
         {/* Topbar */}
-        <header className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-phantix-700/30 bg-phantix-950/60 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-xl lg:px-6">
+        <header className="relative z-30 flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-phantix-700/30 bg-phantix-950/60 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-xl lg:px-6">
           <div className="flex shrink-0 items-center gap-2">
             {/* Launcher: open the product apps. Phones open them from the More sheet. */}
             <div ref={launcherRef} className="relative hidden md:block">
@@ -539,6 +541,10 @@ export default function Layout() {
           <div className="min-w-0 flex-1" />
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {/* Editors and contributors get no operational alerts. */}
+            {(session?.role === "support" || session?.role === "admin" || session?.role === "superadmin") && (
+              <NotificationBell />
+            )}
             {/* Phones: theme and sign-out live in the More sheet. */}
             <span className="hidden md:contents">
               <ThemeToggle />

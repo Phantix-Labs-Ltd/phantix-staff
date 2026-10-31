@@ -39,6 +39,7 @@ import AnalyticsAdmin from "@/pages/admin/Analytics";
 import ArchitectureAdmin from "@/pages/admin/Architecture";
 import DemoRequestsAdmin from "@/pages/admin/DemoRequests";
 import FeedbackAdmin from "@/pages/admin/Feedback";
+import PrivacyRequestsAdmin from "@/pages/admin/PrivacyRequests";
 import SocProvisioning from "@/pages/admin/SocProvisioning";
 import EmailTemplates from "@/pages/admin/EmailTemplates";
 import LegalDocuments from "@/pages/admin/LegalDocuments";
@@ -166,6 +167,7 @@ export default function App() {
             <Route path="/analytics" element={<RequireAdmin><AnalyticsAdmin /></RequireAdmin>} />
             <Route path="/demo-requests" element={<RequireAdmin><DemoRequestsAdmin /></RequireAdmin>} />
             <Route path="/feedback" element={<RequireAdmin><FeedbackAdmin /></RequireAdmin>} />
+            <Route path="/privacy-requests" element={<RequireAdmin><PrivacyRequestsAdmin /></RequireAdmin>} />
             <Route path="/compliance" element={<RequireAdmin><ComplianceAdmin /></RequireAdmin>} />
             <Route path="/audits" element={<RequireAdmin><AuditConsole /></RequireAdmin>} />
             <Route path="/soc-provisioning" element={<RequireAdmin><SocProvisioning /></RequireAdmin>} />
